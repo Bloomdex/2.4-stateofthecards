@@ -64,7 +64,12 @@ class Login extends Component<IProps, IState> {
 			//  Second child is a loading-icon
 			return (
 				<div className={styles.wrapper}>
-					<MenuCard ref={this.menuCard} currentChild={0}>
+					<MenuCard
+						width={210}
+						height={380}
+						ref={this.menuCard}
+						currentChild={0}
+					>
 						<form
 							onSubmit={(event) => {
 								this.menuCard.current?.setCurrentChild(1);
@@ -81,7 +86,7 @@ class Login extends Component<IProps, IState> {
 								</h3>
 								<img
 									className={styles.logo}
-									src="stateofthecards-logo.png"
+									src="icons/stateofthecards-icon.svg"
 									alt=""
 								/>
 							</div>

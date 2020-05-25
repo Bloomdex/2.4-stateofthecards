@@ -1,8 +1,7 @@
-.card {
+.cardFace {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	max-width: 320px;
 	padding: 30px 38px 38px;
 	background-color: #eee;
 
@@ -13,10 +12,4 @@
 	border-radius: 10px;
 	height: 350px;
 	width: 180px;
-}
-
-@media only screen and (max-height: 900px) and (orientation: landscape) {
-	.card {
-		height: 250px;
-	}
 }
