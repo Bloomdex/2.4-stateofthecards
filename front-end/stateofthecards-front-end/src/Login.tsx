@@ -1,4 +1,4 @@
-import React, { Component, RefObject, createRef } from "react";
+import React, { Component, RefObject, createRef, FormEvent } from "react";
 import styles from "./Login.module.css";
 import { Redirect } from "react-router-dom";
 import ScaleLoader from "react-spinners/ScaleLoader";
@@ -30,7 +30,7 @@ class Login extends Component<IProps, IState> {
 		};
 	}
 
-	handleLogin = (event: any) => {
+	onSubmitLogin = (event: FormEvent) => {
 		event.preventDefault();
 
 		if (this.state.pageState !== PageState.LOADING) {
@@ -47,11 +47,11 @@ class Login extends Component<IProps, IState> {
 		}
 	};
 
-	handleUsernameInput = (event: any) => {
+	onUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		this.setState({ username: event.target.value });
 	};
 
-	handlePasswordInput = (event: any) => {
+	onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
 		this.setState({ password: event.target.value });
 	};
 
@@ -59,13 +59,16 @@ class Login extends Component<IProps, IState> {
 		if (this.state.pageState === PageState.POST) {
 			return <Redirect to="/dashboard"></Redirect>;
 		} else {
+			// Creates a MenuCard with two childs:
+			//  First child is a login-form
+			//  Second child is a loading-icon
 			return (
 				<div className={styles.wrapper}>
 					<MenuCard ref={this.menuCard} currentChild={0}>
 						<form
 							onSubmit={(event) => {
 								this.menuCard.current?.setCurrentChild(1);
-								this.handleLogin(event);
+								this.onSubmitLogin(event);
 							}}
 							name="LoginForm"
 							className={
@@ -92,7 +95,7 @@ class Login extends Component<IProps, IState> {
 								placeholder="Username"
 								required
 								autoFocus
-								onChange={this.handleUsernameInput}
+								onChange={this.onUsernameChange}
 							/>
 							<input
 								className={styles.formControl}
@@ -101,7 +104,7 @@ class Login extends Component<IProps, IState> {
 								placeholder="Password"
 								type="password"
 								required
-								onChange={this.handlePasswordInput}
+								onChange={this.onPasswordChange}
 							/>
 							<button
 								className={`${styles.formControl} ${styles.loginButton}`}

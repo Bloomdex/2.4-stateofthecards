@@ -35,6 +35,7 @@ class MenuCard extends Component<IProps, IState> {
 	}
 
 	setCurrentChild(index: number) {
+		// If index has not changed: do nothing.
 		if (index === this.state.currentIndex) return;
 		else this.setState({ currentIndex: index });
 
@@ -59,7 +60,7 @@ class MenuCard extends Component<IProps, IState> {
 	}
 
 	render() {
-		// Only display the currentChild
+		// Shows one of the two childs depending on the isFlipped state
 		return (
 			<ReactCardFlip
 				isFlipped={this.state.isFlipped}
@@ -68,7 +69,6 @@ class MenuCard extends Component<IProps, IState> {
 				<div className={styles.card + " " + this.firstCardClass}>
 					{this.state.frontChild}
 				</div>
-
 				<div className={styles.card + " " + this.secondCardClass}>
 					{this.state.backChild}
 				</div>
