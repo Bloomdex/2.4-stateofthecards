@@ -16,9 +16,6 @@ interface IState {
 }
 
 class MenuCard extends Component<IProps, IState> {
-	private firstCardClass: string = "";
-	private secondCardClass: string = "";
-
 	constructor(props: IProps) {
 		super(props);
 
@@ -66,12 +63,8 @@ class MenuCard extends Component<IProps, IState> {
 				isFlipped={this.state.isFlipped}
 				flipDirection="horizontal"
 			>
-				<div className={styles.card + " " + this.firstCardClass}>
-					{this.state.frontChild}
-				</div>
-				<div className={styles.card + " " + this.secondCardClass}>
-					{this.state.backChild}
-				</div>
+				<div className={styles.card}>{this.state.frontChild}</div>
+				<div className={styles.card}>{this.state.backChild}</div>
 			</ReactCardFlip>
 		);
 	}
