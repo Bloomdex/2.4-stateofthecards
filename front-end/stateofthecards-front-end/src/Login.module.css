@@ -1,8 +1,12 @@
 .wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow: auto;
+
 	display: flex;
-	position: absolute;
-	height: 100%;
-	width: 100%;
 	align-items: center;
 	justify-content: center;
 	background-color: rgba(184, 213, 184, 1);
@@ -12,13 +16,6 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	max-width: 320px;
-	padding: 30px 38px 38px;
-	background-color: #eee;
-	-webkit-box-shadow: 0px 2px 5px -2px rgba(0, 0, 0, 0.6);
-	-moz-box-shadow: 0px 2px 5px -2px rgba(0, 0, 0, 0.6);
-	box-shadow: 0px 2px 5px -2px rgba(0, 0, 0, 0.6);
-	border-radius: 10px;
 }
 
 .branding {
@@ -29,8 +26,6 @@
 
 .heading {
 	text-align: center;
-	margin-top: 20px;
-	margin-bottom: 15px;
 }
 
 .logo {
@@ -44,6 +39,7 @@
 }
 
 input {
+	outline: none;
 	margin-bottom: 20px;
 	border-radius: 4px;
 	border: none;
@@ -51,6 +47,7 @@ input {
 }
 
 .loginButton {
+	outline: none;
 	border-radius: 4px;
 	border: none;
 	padding: 6px;
@@ -58,9 +55,17 @@ input {
 	color: white;
 }
 
+.loginButton:hover {
+	background-color: #3e7aa8;
+}
+
+.loginButton:active {
+	background-color: #295170;
+}
+
 .colorGraph {
 	height: 4px;
-	margin: 36px 0;
+	margin: 35px 0;
 	width: 100%;
 	border: 0;
 	background: #33658a;
@@ -84,5 +89,20 @@ input {
 	}
 	.logo {
 		width: 50px;
+	}
+}
+
+@media only screen and (max-height: 900px) and (orientation: landscape) {
+	.branding {
+		flex-direction: row;
+	}
+	.heading {
+		margin-right: 10px;
+	}
+	.logo {
+		width: 50px;
+	}
+	.colorGraph {
+		margin: 25px 0;
 	}
 }

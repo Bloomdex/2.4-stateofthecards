@@ -1,0 +1,41 @@
+.alertPanel {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow: auto;
+
+	color: #eee;
+	background-color: rgba(184, 213, 184, 1);
+	text-align: center;
+}
+
+.alertPanel > h1 {
+	text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
+	-webkit-text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
+	-moz-text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
+	margin: auto 15px;
+}
+
+@media screen and (orientation: portrait) {
+	.alertPanel {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.contentPanel {
+		display: none;
+	}
+}
+
+@media screen and (orientation: landscape) {
+	.alertPanel {
+		display: none;
+	}
+
+	.contentPanel {
+		display: block;
+	}
+}

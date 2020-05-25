@@ -1,98 +1,130 @@
-import React, { Component } from "react";
+import React, { Component, RefObject, createRef } from "react";
 import styles from "./Login.module.css";
 import { Redirect } from "react-router-dom";
+import ScaleLoader from "react-spinners/ScaleLoader";
+import MenuCard from "./components/MenuCard";
 
 interface IProps {}
 
+enum PageState {
+	SHOWN,
+	LOADING,
+	POST,
+}
+
 interface IState {
-	post: boolean;
+	pageState: PageState;
 	username: string;
 	password: string;
 }
 
 class Login extends Component<IProps, IState> {
+	private menuCard: RefObject<MenuCard> = createRef();
+
 	constructor(props: IProps) {
 		super(props);
-		this.state = { post: false, username: "", password: "" };
+		this.state = {
+			pageState: PageState.SHOWN,
+			username: "",
+			password: "",
+		};
 	}
 
 	handleLogin = (event: any) => {
 		event.preventDefault();
 
-		// Instead of printing it to the console
-		//  Login to the back-end
-		console.log(this.state.username, this.state.password);
+		if (this.state.pageState !== PageState.LOADING) {
+			// Instead of logging and waiting
+			//  Login to the back-end
+			const promise = new Promise((resolve) => setTimeout(resolve, 1500));
 
-		// When succesfull, re-direct the user
-		//  To the dashboard.
-		this.setState({ post: true });
+			// While we are waiting for the promise show a loading screen.
+			this.setState({ pageState: PageState.LOADING });
+
+			// When succesfull, re-direct the user
+			//  To the dashboard.
+			promise.then(() => this.setState({ pageState: PageState.POST }));
+		}
 	};
 
 	handleUsernameInput = (event: any) => {
-		this.setState({
-			username: event.target.value,
-		});
+		this.setState({ username: event.target.value });
 	};
 
 	handlePasswordInput = (event: any) => {
-		this.setState({
-			password: event.target.value,
-		});
+		this.setState({ password: event.target.value });
 	};
 
 	render() {
-		if (this.state.post) return <Redirect to="/dashboard"></Redirect>;
-		else
+		if (this.state.pageState === PageState.POST) {
+			return <Redirect to="/dashboard"></Redirect>;
+		} else {
 			return (
 				<div className={styles.wrapper}>
-					<form
-						onSubmit={this.handleLogin}
-						method="post"
-						name="LoginForm"
-						className={styles.formSignin}
-					>
-						<div className={styles.branding}>
-							<h3 className={styles.heading}>
-								State of the Cards
-							</h3>
-							<img
-								className={styles.logo}
-								src="stateofthecards-logo.png"
-								alt=""
+					<MenuCard ref={this.menuCard} currentChild={0}>
+						<form
+							onSubmit={(event) => {
+								this.menuCard.current?.setCurrentChild(1);
+								this.handleLogin(event);
+							}}
+							name="LoginForm"
+							className={
+								styles.formSignin + " " + styles.cardSide
+							}
+						>
+							<div className={styles.branding}>
+								<h3 className={styles.heading}>
+									State of the Cards
+								</h3>
+								<img
+									className={styles.logo}
+									src="stateofthecards-logo.png"
+									alt=""
+								/>
+							</div>
+
+							<hr className={styles.colorGraph} />
+
+							<input
+								type="text"
+								className={styles.formControl}
+								name="Username"
+								placeholder="Username"
+								required
+								autoFocus
+								onChange={this.handleUsernameInput}
+							/>
+							<input
+								className={styles.formControl}
+								id="password"
+								name="Password"
+								placeholder="Password"
+								type="password"
+								required
+								onChange={this.handlePasswordInput}
+							/>
+							<button
+								className={`${styles.formControl} ${styles.loginButton}`}
+								name="Submit"
+								value="Login"
+								type="submit"
+							>
+								Login
+							</button>
+						</form>
+						<div className={styles.cardSide}>
+							<ScaleLoader
+								height={35}
+								width={4}
+								radius={2}
+								margin={2}
+								color={"#33658a"}
 							/>
 						</div>
-						<hr className={styles.colorGraph} />
-						<input
-							type="text"
-							className={styles.formControl}
-							name="Username"
-							placeholder="Username"
-							required
-							autoFocus
-							value={this.state.username}
-							onChange={this.handleUsernameInput}
-						/>
-						<input
-							className={styles.formControl}
-							id="password"
-							name="Password"
-							placeholder="Password"
-							type="password"
-							required
-							value={this.state.password}
-							onChange={this.handlePasswordInput}
-						/>
-						<button
-							className={`${styles.formControl} ${styles.loginButton}`}
-							name="Submit"
-							value="Login"
-							type="submit"
-						>
-							Login
-						</button>
-					</form>
+					</MenuCard>
 				</div>
 			);
+		}
 	}
 }
 
