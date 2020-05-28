@@ -11,25 +11,47 @@
 	grid-template-rows: auto 1fr;
 }
 
-.title {
-	color: #eee;
-	text-align: center;
-	text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
-	-webkit-text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
-	-moz-text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6);
-}
-
 .headerWrapper {
+	padding: 5px 15px;
 	grid-area: 1 / 1 / 1 / 1;
 	display: flex;
 	justify-content: space-between;
 	flex-direction: row;
 	align-items: center;
-	background-color: lightpink;
+	background-color: #33658a;
+	z-index: 1;
+
+	-webkit-box-shadow: 0px 2px 5px -1px rgba(0, 0, 0, 0.6);
+	-moz-box-shadow: 0px 2px 5px -1px rgba(0, 0, 0, 0.6);
+	box-shadow: 0px 2px 5px -1px rgba(0, 0, 0, 0.6);
 }
 
-.headerWrapper > * {
-	margin: 0 20px;
+.headerWrapper > img {
+	width: 5vw;
+	-webkit-filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.6));
+	filter: drop-shadow(0px 2px 2px rgba(0, 0, 0, 0.6));
+}
+
+.message {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.message > p {
+	font-size: 2vw;
+	font-weight: bold;
+	color: #eee;
+	text-align: center;
+
+	margin: 0px;
+
+	color: #ffffff;
+	text-shadow: 0 0 10px #ffffff;
+
+	text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
+	-webkit-text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
+	-moz-text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
 }
 
 .optionsWrapper {
@@ -51,10 +73,55 @@
 	justify-content: center;
 }
 
-.cardContent {
-	text-align: center;
+.cardWrapper {
+	margin: 0 0.5vw;
+	transform: scale(0.9);
+	transition: transform 0.15s ease-out;
+}
+
+.cardWrapper:hover,
+.cardWrapper:active {
+	transform: scale(1);
 }
 
 .card {
-	margin: 0 20px;
+	width: 13vw;
+	height: 21vw;
+}
+
+.cardContent {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	border-radius: 10px;
+
+	text-align: center;
+
+	cursor: pointer;
+
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-drag: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+.cardContent > p {
+	font-size: 2vw;
+	font-weight: 500;
+}
+
+.cardContent > img {
+	width: 7vw;
+
+	-webkit-user-drag: none;
+	user-drag: none;
+}
+
+.quickJoinCard:hover,
+.quickJoinCard:active {
+	cursor: default;
 }

@@ -5,8 +5,7 @@ import ReactCardFlip from "react-card-flip";
 interface IProps {
 	children: React.ReactElement[];
 	currentChild: number;
-	width: number;
-	height: number;
+	cssClass: string;
 }
 
 interface IState {
@@ -15,8 +14,7 @@ interface IState {
 	frontChild: React.ReactElement;
 	backChild: React.ReactElement;
 	currentIndex: number;
-	width: number;
-	height: number;
+	cssClass: string;
 }
 
 class MenuCard extends Component<IProps, IState> {
@@ -32,8 +30,7 @@ class MenuCard extends Component<IProps, IState> {
 					(props.currentChild + 1) % props.children.length
 				],
 			currentIndex: props.currentChild,
-			width: props.width,
-			height: props.height,
+			cssClass: props.cssClass,
 		};
 	}
 
@@ -62,6 +59,13 @@ class MenuCard extends Component<IProps, IState> {
 		this.setState({ isFlipped: !this.state.isFlipped });
 	}
 
+	setNextChild() {
+		let newIndex =
+			(this.state.currentIndex + 1) % this.state.children.length;
+
+		this.setCurrentChild(newIndex);
+	}
+
 	render() {
 		// Shows one of the two childs depending on the isFlipped state
 		return (
@@ -69,22 +73,10 @@ class MenuCard extends Component<IProps, IState> {
 				isFlipped={this.state.isFlipped}
 				flipDirection="horizontal"
 			>
-				<div
-					style={{
-						width: this.state.width,
-						height: this.state.height,
-					}}
-					className={styles.cardFace}
-				>
+				<div className={styles.cardFace + " " + this.state.cssClass}>
 					{this.state.frontChild}
 				</div>
-				<div
-					style={{
-						width: this.state.width,
-						height: this.state.height,
-					}}
-					className={styles.cardFace}
-				>
+				<div className={styles.cardFace + " " + this.state.cssClass}>
 					{this.state.backChild}
 				</div>
 			</ReactCardFlip>

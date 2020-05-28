@@ -65,9 +65,8 @@ class Login extends Component<IProps, IState> {
 			return (
 				<div className={styles.wrapper}>
 					<MenuCard
-						width={210}
-						height={380}
 						ref={this.menuCard}
+						cssClass={styles.card}
 						currentChild={0}
 					>
 						<form
@@ -81,9 +80,9 @@ class Login extends Component<IProps, IState> {
 							}
 						>
 							<div className={styles.branding}>
-								<h3 className={styles.heading}>
+								<p className={styles.heading}>
 									State of the Cards
-								</h3>
+								</p>
 								<img
 									className={styles.logo}
 									src="icons/stateofthecards-icon.svg"
@@ -120,15 +119,13 @@ class Login extends Component<IProps, IState> {
 								Login
 							</button>
 						</form>
-						<div className={styles.cardSide}>
-							<ScaleLoader
-								height={35}
-								width={4}
-								radius={2}
-								margin={2}
-								color={"#33658a"}
-							/>
-						</div>
+						<ScaleLoader
+							height={35}
+							width={4}
+							radius={2}
+							margin={2}
+							color={"#33658a"}
+						/>
 					</MenuCard>
 				</div>
 			);
