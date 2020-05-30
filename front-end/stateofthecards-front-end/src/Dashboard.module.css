@@ -1,0 +1,106 @@
+.wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow: auto;
+
+	display: grid;
+	grid-template-columns: auto;
+	grid-template-rows: auto 1fr;
+}
+
+.message {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+}
+
+.message > p {
+	font-size: 2vw;
+	font-weight: bold;
+	color: #eee;
+	text-align: center;
+
+	margin: 0px;
+
+	color: #ffffff;
+	text-shadow: 0 0 10px #ffffff;
+
+	text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
+	-webkit-text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
+	-moz-text-shadow: 0px 2px 2px rgba(0, 0, 0, 0.6);
+}
+
+.optionsWrapper {
+	grid-area: 2 / 1 / 2 / 1;
+
+	overflow: auto;
+
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	background-color: rgba(184, 213, 184, 1);
+}
+
+.options {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
+}
+
+.cardWrapper {
+	margin: 0 0.5vw;
+	transform: scale(0.9);
+	transition: transform 0.15s ease-out;
+}
+
+.cardWrapper:hover,
+.cardWrapper:active {
+	transform: scale(1);
+}
+
+.card {
+	width: 13vw;
+	height: 21vw;
+}
+
+.cardContent {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	border-radius: 10px;
+
+	text-align: center;
+
+	cursor: pointer;
+
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-drag: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+.cardContent > p {
+	font-size: 2vw;
+	font-weight: 500;
+}
+
+.cardContent > img {
+	width: 7vw;
+
+	-webkit-user-drag: none;
+	user-drag: none;
+}
+
+.quickJoinCard:hover,
+.quickJoinCard:active {
+	cursor: default;
+}

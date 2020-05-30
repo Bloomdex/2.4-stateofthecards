@@ -1,0 +1,70 @@
+.frameWrapper {
+	display: flex;
+	height: 100%;
+	width: 100%;
+}
+
+.frame {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+	height: auto;
+	margin: 4%;
+	padding: 10px 0;
+	border-radius: 10px;
+	background-color: lightgray;
+}
+
+.frame > img {
+	width: 3vw;
+}
+
+.frame > img:hover,
+.frame > img:active {
+	cursor: pointer;
+}
+
+.gameInfo > * {
+	margin: 0;
+	font-size: 1vw;
+}
+
+.gameInfo > p:nth-child(1) {
+	font-weight: bold;
+}
+
+.tableWrapper {
+	overflow: hidden;
+	overflow-y: scroll;
+	display: block;
+
+	flex-grow: 1;
+	width: 90%;
+
+	margin: 5px 0;
+
+	border: 1px solid #bfbfbf;
+}
+
+table {
+	width: 100%;
+	border-spacing: 0;
+}
+
+table tbody {
+	width: 100%;
+}
+
+tr:nth-child(even) {
+	background-color: white;
+}
+
+tr {
+	background-color: gainsboro;
+}
+
+td {
+	font-size: 1vw;
+}
