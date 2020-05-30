@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./QuickJoinMenu.module.css";
 import ScaleLoader from "react-spinners/ScaleLoader";
+import ILobbyInfo from "../structures/ILobbyInfo";
 
 enum QuickJoinState {
 	Idle,
@@ -14,31 +15,7 @@ interface IProps {
 
 interface IState {
 	currentState: QuickJoinState;
-	lobbyInfo?: LobbyInfo;
-}
-
-interface LobbyInfo {
-	// The current players connected to the lobby
-	//  Should not use string-type in the future.
-	//  so that a player can press on a different,
-	//  player to show info.
-	players: string[];
-
-	// The id of the game so it can
-	//  be fetched by the user.
-	gameInfo: GameInfo;
-
-	// Should be an enum similar to:
-	//  Waiting, Preparing, Post
-	state: string;
-}
-
-// Temporary interface that contains info about
-//  the game that is going to be played.
-interface GameInfo {
-	minPlayers: number;
-	maxPlayers: number;
-	name: string;
+	lobbyInfo?: ILobbyInfo;
 }
 
 class QuickJoinMenu extends React.Component<IProps, IState> {
@@ -58,7 +35,7 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 
 	// Use this  method when info about a lobby has been retrieved.
 	//  Will automatically change the view to the lobby or searching view.
-	setLobbyInfo(lobbyInfo?: LobbyInfo) {
+	setLobbyInfo(lobbyInfo?: ILobbyInfo) {
 		// Set the state depending on the given lobby-info
 		if (!lobbyInfo)
 			this.setState({ currentState: QuickJoinState.Searching });

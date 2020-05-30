@@ -3,8 +3,27 @@ import styles from "./Dashboard.module.css";
 import MenuCard from "./components/MenuCard";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import QuickJoinMenu from "./components/QuickJoinMenu";
+import { Redirect } from "react-router-dom";
+import HeaderBar from "./components/HeaderBar";
 
-class Dashboard extends Component {
+enum DashBoardState {
+	Idle,
+	RedirectJoinFriends,
+	RedirectServerList,
+	RedirectCreateMatch,
+	RedirectQuickJoin,
+	RedirectCreateGame,
+	Logout,
+	Settings,
+}
+
+interface IProps {}
+
+interface IState {
+	currentState: DashBoardState;
+}
+
+class Dashboard extends Component<IProps, IState> {
 	// Cards
 	private joinFriendsCard: RefObject<MenuCard> = createRef();
 	private serverListCard: RefObject<MenuCard> = createRef();
@@ -15,11 +34,39 @@ class Dashboard extends Component {
 	// Menu's
 	private quickJoinMenu: RefObject<QuickJoinMenu> = createRef();
 
+	constructor(props: IProps) {
+		super(props);
+
+		this.state = {
+			currentState: DashBoardState.Idle,
+		};
+	}
+
 	render() {
+		switch (this.state.currentState) {
+			case DashBoardState.Idle:
+				return this.renderDashBoard();
+			case DashBoardState.RedirectServerList:
+				return <Redirect to="/servers"></Redirect>;
+			case DashBoardState.Logout:
+				// Add log-out functionality here.
+				return <Redirect to="/"></Redirect>;
+		}
+	}
+
+	renderDashBoard() {
 		return (
 			<div className={styles.wrapper}>
-				<div className={styles.headerWrapper}>
-					<img src="icons/quit-icon-white.svg" alt="logout"></img>
+				<HeaderBar>
+					<img
+						src="icons/quit-icon-white.svg"
+						alt="logout"
+						onClick={() => {
+							this.setState({
+								currentState: DashBoardState.Logout,
+							});
+						}}
+					></img>
 					<div className={styles.message}>
 						<p>State of the Cards</p>
 						<p>Welcome back SPELER01!</p>
@@ -28,7 +75,7 @@ class Dashboard extends Component {
 						src="icons/settings-icon-white.svg"
 						alt="settings"
 					></img>
-				</div>
+				</HeaderBar>
 				<div className={styles.optionsWrapper}>
 					<div className={styles.options}>
 						<div className={styles.cardWrapper}>
@@ -54,7 +101,15 @@ class Dashboard extends Component {
 								currentChild={0}
 								ref={this.serverListCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										this.setState({
+											currentState:
+												DashBoardState.RedirectServerList,
+										});
+									}}
+								>
 									<img
 										src="icons/server-list-icon.svg"
 										alt=""
@@ -108,6 +163,10 @@ class Dashboard extends Component {
 										promise.then(() => {
 											this.quickJoinMenu.current?.setLobbyInfo(
 												{
+													lobbyId: 0,
+													lobbyName:
+														"QuickJoinLobby01",
+													passwordProtected: false,
 													players: [
 														"Appa",
 														"Momo",

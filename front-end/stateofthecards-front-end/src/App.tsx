@@ -3,12 +3,20 @@ import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import styles from "./App.module.css";
+import ServerList from "./ServerList";
+import MatchLobby from "./MatchLobby";
 
 const App = () => (
 	<Router>
 		<div className="App">
 			<div className={styles.contentPanel}>
 				<Switch>
+					<Route path="/match">
+						<MatchLobby />
+					</Route>
+					<Route path="/servers">
+						<ServerList />
+					</Route>
 					<Route path="/dashboard">
 						<Dashboard />
 					</Route>
