@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import styles from "./MenuCard.module.css";
+import stylesB from "../Base.module.css";
 import ReactCardFlip from "react-card-flip";
 
 interface IProps {
@@ -73,10 +74,26 @@ class MenuCard extends Component<IProps, IState> {
 				isFlipped={this.state.isFlipped}
 				flipDirection="horizontal"
 			>
-				<div className={styles.cardFace + " " + this.state.cssClass}>
+				<div
+					className={
+						stylesB.rounded +
+						" " +
+						styles.cardFace +
+						" " +
+						this.state.cssClass
+					}
+				>
 					{this.state.frontChild}
 				</div>
-				<div className={styles.cardFace + " " + this.state.cssClass}>
+				<div
+					className={
+						stylesB.rounded +
+						" " +
+						styles.cardFace +
+						" " +
+						this.state.cssClass
+					}
+				>
 					{this.state.backChild}
 				</div>
 			</ReactCardFlip>

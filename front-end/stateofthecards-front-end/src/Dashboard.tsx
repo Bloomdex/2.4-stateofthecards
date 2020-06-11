@@ -1,10 +1,15 @@
 import React, { Component, RefObject, createRef } from "react";
 import styles from "./Dashboard.module.css";
+import stylesB from "./Base.module.css";
+import stylesH from "./components/HeaderBar.module.css";
+import stylesMC from "./components/MenuCard.module.css";
 import MenuCard from "./components/MenuCard";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import QuickJoinMenu from "./components/QuickJoinMenu";
 import { Redirect } from "react-router-dom";
 import HeaderBar from "./components/HeaderBar";
+import FirebaseApp from "./config/Firebase";
+import UserSingleton from "./config/UserSingleton";
 
 enum DashBoardState {
 	Idle,
@@ -49,36 +54,73 @@ class Dashboard extends Component<IProps, IState> {
 			case DashBoardState.RedirectServerList:
 				return <Redirect to="/servers"></Redirect>;
 			case DashBoardState.Logout:
-				// Add log-out functionality here.
+				// Logout using Firebase
+				FirebaseApp.auth().signOut();
 				return <Redirect to="/"></Redirect>;
 		}
 	}
 
 	renderDashBoard() {
 		return (
-			<div className={styles.wrapper}>
+			<div
+				className={
+					stylesB.wrapper +
+					" " +
+					stylesB.background +
+					" " +
+					styles.wrapper
+				}
+			>
 				<HeaderBar>
-					<img
-						src="icons/quit-icon-white.svg"
-						alt="logout"
-						onClick={() => {
-							this.setState({
-								currentState: DashBoardState.Logout,
-							});
-						}}
-					></img>
-					<div className={styles.message}>
-						<p>State of the Cards</p>
-						<p>Welcome back SPELER01!</p>
+					<div className={stylesB.buttonWrapper}>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledTertiary
+							}
+							onClick={() => {
+								this.setState({
+									currentState: DashBoardState.Logout,
+								});
+							}}
+						>
+							Logout
+						</button>
 					</div>
-					<img
-						src="icons/settings-icon-white.svg"
-						alt="settings"
-					></img>
+					<div className={styles.infoWrapper}>
+						<p className={stylesH.headerTextLarge}>
+							State of the cards
+						</p>
+						<p className={stylesH.headerTextSmall}>
+							Welcome back{" "}
+							{
+								UserSingleton.getInstance()?.getUserInfo()
+									.firebaseUser?.email
+							}
+							!
+						</p>
+					</div>
+					<div className={stylesB.buttonWrapper}>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledSecondary
+							}
+						>
+							Options
+						</button>
+					</div>
 				</HeaderBar>
+
 				<div className={styles.optionsWrapper}>
 					<div className={styles.options}>
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
@@ -89,13 +131,17 @@ class Dashboard extends Component<IProps, IState> {
 										src="icons/join-friends-icon.svg"
 										alt=""
 									></img>
-									<p>Join Friends</p>
+									<p>Add Friends</p>
 								</div>
 								<div></div>
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
@@ -120,7 +166,11 @@ class Dashboard extends Component<IProps, IState> {
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
@@ -137,7 +187,11 @@ class Dashboard extends Component<IProps, IState> {
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
@@ -186,6 +240,12 @@ class Dashboard extends Component<IProps, IState> {
 														minPlayers: 2,
 														maxPlayers: 6,
 														name: "Blackjack",
+														description:
+															"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
+														cardLogo: new URL(
+															"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
+														),
+														color: "#FFFFFF",
 													},
 													state:
 														"Waiting for players",
@@ -217,7 +277,11 @@ class Dashboard extends Component<IProps, IState> {
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}

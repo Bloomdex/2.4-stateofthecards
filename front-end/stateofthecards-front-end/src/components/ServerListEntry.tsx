@@ -1,4 +1,5 @@
 import React from "react";
+import stylesLE from "./BasicListEntry.module.css";
 import styles from "./ServerListEntry.module.css";
 import ILobbyInfo from "../structures/ILobbyInfo";
 
@@ -21,8 +22,8 @@ class ServerListEntry extends React.Component<IProps, IState> {
 
 	render() {
 		return (
-			<div className={styles.entry}>
-				<div className={styles.serverInfo}>
+			<div className={stylesLE.entry + " " + styles.entry}>
+				<div className={stylesLE.leftInfo}>
 					<img src="icons/open-match-icon.svg" alt="State" />
 					<p>{this.props.lobbyInfo.lobbyName}</p>
 				</div>
@@ -31,7 +32,7 @@ class ServerListEntry extends React.Component<IProps, IState> {
 					<p>{this.props.lobbyInfo.gameInfo.name}</p>
 				</div>
 
-				<div className={styles.joinInfo}>
+				<div className={stylesLE.rightInfo}>
 					<p>
 						{this.props.lobbyInfo.players.length}/
 						{this.props.lobbyInfo.gameInfo.maxPlayers}

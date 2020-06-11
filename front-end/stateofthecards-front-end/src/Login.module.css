@@ -1,110 +1,70 @@
 .wrapper {
-	position: fixed;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	overflow: auto;
-
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: rgba(184, 213, 184, 1);
 }
 
-.card {
-	width: 14vw;
-	height: 23vw;
-	background-color: red;
-	padding: 1.8vw;
-}
-
-.formSignin {
-	flex-grow: 1;
+.formWrapper {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
 	justify-content: space-between;
+	height: 100%;
+	width: 100%;
 }
 
-.branding {
+.recaptcha {
+	display: block;
+}
+
+/*------------------------------------------------Card content------------------------------------------------*/
+.cardContentWrapper {
 	display: flex;
 	flex-direction: column;
+	width: 16vw;
+	height: 26vw;
+	padding: 1vw;
+}
+
+.cardContentWrapperCenter {
+	justify-content: center;
 	align-items: center;
 }
 
-.heading {
-	text-align: center;
-	font-weight: bold;
-	margin: 0px;
-	padding: 0px;
-	font-size: 2vw;
-}
-
-.logo {
-	width: 5vw;
-}
-
-.formControl {
-	box-sizing: border-box;
-	font-size: 16px;
-	width: 100%;
-}
-
-input {
-	outline: none;
-	margin-bottom: 1.2vw;
-	border-radius: 4px;
-	border: none;
-	padding: 6px;
-}
-
-.loginButton {
-	outline: none;
-	border-radius: 4px;
-	border: none;
-	padding: 6px;
-	background-color: #33658a;
-	color: white;
-}
-
-.loginButton:hover {
-	background-color: #3e7aa8;
-}
-
-.loginButton:active {
-	background-color: #295170;
-}
-
-.colorGraph {
-	height: 4px;
-	margin: 2vw 0;
-	width: 100%;
-	border: 0;
-	background: #33658a;
-	border-radius: 2px;
-	background: linear-gradient(
-		90deg,
-		rgba(51, 101, 138, 1) 0%,
-		rgba(184, 213, 184, 1) 25%,
-		rgba(215, 180, 158, 1) 50%,
-		rgba(220, 96, 46, 1) 75%,
-		rgba(188, 65, 43, 1) 100%
-	);
-}
-
-@media only screen and (max-width: 1350px) and (orientation: landscape) {
-	.branding {
-		flex-direction: row;
-	}
-	.heading {
-		margin-right: 10px;
+@media only screen and (max-width: 1500px) {
+	.cardContentWrapper {
+		width: 16vw;
+		height: 25vw;
 	}
 }
 
-@media only screen and (max-width: 1000px) and (orientation: landscape) {
-	.card {
+@media only screen and (max-width: 1100px) {
+	.cardContentWrapper {
 		width: 18vw;
 		height: 27vw;
 	}
+}
+
+@media only screen and (max-width: 900px) {
+	.cardContentWrapper {
+		width: 20vw;
+		height: 29vw;
+	}
+}
+
+@media only screen and (max-width: 700px) {
+	.cardContentWrapper {
+		width: 24vw;
+		height: 33vw;
+	}
+}
+
+/*------------------------------------------------Input fields------------------------------------------------*/
+.inputWrapper {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.inputWrapper > * {
+	margin-bottom: 0.8vw;
 }

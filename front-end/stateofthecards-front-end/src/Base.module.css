@@ -1,0 +1,115 @@
+/*------------------------------------------------General------------------------------------------------*/
+.wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	overflow: auto;
+}
+
+.rounded {
+	border-radius: 10px;
+}
+
+.background {
+	background-color: #4282b3;
+}
+
+.backgroundDark {
+	background-color: #404040;
+}
+
+.error {
+	color: #e65c53;
+	font-weight: bold;
+}
+
+/*------------------------------------------------General: Interactive------------------------------------------------*/
+.interactiveFont {
+	font-size: 1vw;
+}
+
+@media only screen and (max-width: 1100px) {
+	.interactiveFont {
+		font-size: 1.5vw;
+	}
+}
+
+@media only screen and (max-width: 800px) {
+	.interactiveFont {
+		font-size: 2vw;
+	}
+}
+
+@media only screen and (max-width: 500px) {
+	.interactiveFont {
+		font-size: 2.5vw;
+	}
+}
+
+/*------------------------------------------------Buttons------------------------------------------------*/
+.buttonWrapper {
+	padding-bottom: 5px;
+}
+
+.buttonBase {
+	color: white;
+	font-weight: bold;
+	padding: 1vh 2vw;
+	outline: none;
+	border: none;
+	border-radius: 6px;
+	transition: transform 0.05s;
+}
+
+.buttonFilledPrimary {
+	background-color: #4282b3;
+	box-shadow: 0 5px #376c95;
+}
+.buttonFilledPrimary:hover {
+	background-color: #4c8cbd;
+}
+.buttonFilledPrimary:active {
+	background-color: #4282b3;
+	box-shadow: 0 3px #376c95;
+	transform: translateY(4px);
+}
+
+.buttonFilledSecondary {
+	background-color: #f08d42;
+	box-shadow: 0 5px #ed771d;
+	transition: transform 0.05s;
+}
+.buttonFilledSecondary:hover {
+	background-color: #f19955;
+}
+.buttonFilledSecondary:active {
+	background-color: #f08d42;
+	box-shadow: 0 3px #ed771d;
+	transform: translateY(4px);
+}
+
+.buttonFilledTertiary {
+	background-color: #736a91;
+	box-shadow: 0 5px #675e82;
+	transition: transform 0.05s;
+}
+
+.buttonFilledTertiary:hover {
+	background-color: #867da1;
+}
+
+.buttonFilledTertiary:active {
+	background-color: #736a91;
+	box-shadow: 0 3px #675e82;
+	transform: translateY(4px);
+}
+
+/*------------------------------------------------Input------------------------------------------------*/
+.input {
+	outline: none;
+	border-radius: 6px;
+	border: none;
+	padding: 1vh 2vw;
+}
