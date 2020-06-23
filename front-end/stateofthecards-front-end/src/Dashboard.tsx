@@ -6,26 +6,27 @@ import stylesMC from "./components/MenuCard.module.css";
 import MenuCard from "./components/MenuCard";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import QuickJoinMenu from "./components/QuickJoinMenu";
+import AddFriendsMenu from "./components/AddFriendsMenu";
 import { Redirect } from "react-router-dom";
 import HeaderBar from "./components/HeaderBar";
 import FirebaseApp from "./config/Firebase";
 import UserSingleton from "./config/UserSingleton";
+import { Room, DataChange, RoomAvailable } from "colyseus.js";
 
 enum DashBoardState {
 	Idle,
-	RedirectJoinFriends,
 	RedirectServerList,
 	RedirectCreateMatch,
-	RedirectQuickJoin,
 	RedirectCreateGame,
+	RedirectQuickJoin,
 	Logout,
-	Settings,
 }
 
 interface IProps {}
 
 interface IState {
 	currentState: DashBoardState;
+	lobby: any;
 }
 
 class Dashboard extends Component<IProps, IState> {
@@ -38,12 +39,14 @@ class Dashboard extends Component<IProps, IState> {
 
 	// Menu's
 	private quickJoinMenu: RefObject<QuickJoinMenu> = createRef();
+	private addFriendsMenu: RefObject<AddFriendsMenu> = createRef();
 
 	constructor(props: IProps) {
 		super(props);
 
 		this.state = {
 			currentState: DashBoardState.Idle,
+			lobby: undefined,
 		};
 	}
 
@@ -53,6 +56,20 @@ class Dashboard extends Component<IProps, IState> {
 				return this.renderDashBoard();
 			case DashBoardState.RedirectServerList:
 				return <Redirect to="/servers"></Redirect>;
+			case DashBoardState.RedirectCreateMatch:
+				return (
+					<Redirect
+						to={
+							"/match?id=" +
+							UserSingleton.getInstance().getUserInfo()
+								.currentRoom?.id
+						}
+					></Redirect>
+				);
+				break;
+			case DashBoardState.RedirectQuickJoin:
+				return <Redirect to={"/tempGamePage"}></Redirect>;
+				break;
 			case DashBoardState.Logout:
 				// Logout using Firebase
 				FirebaseApp.auth().signOut();
@@ -87,6 +104,21 @@ class Dashboard extends Component<IProps, IState> {
 						>
 							Logout
 						</button>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledTertiary
+							}
+							onClick={() => {
+								this.setState({
+									currentState:
+										DashBoardState.RedirectQuickJoin,
+								});
+							}}
+						>
+							SPELLLLLETJE
+						</button>
 					</div>
 					<div className={styles.infoWrapper}>
 						<p className={stylesH.headerTextLarge}>
@@ -96,22 +128,12 @@ class Dashboard extends Component<IProps, IState> {
 							Welcome back{" "}
 							{
 								UserSingleton.getInstance()?.getUserInfo()
-									.firebaseUser?.email
+									.firebaseUser?.displayName
 							}
 							!
 						</p>
 					</div>
-					<div className={stylesB.buttonWrapper}>
-						<button
-							className={
-								stylesB.buttonBase +
-								" " +
-								stylesB.buttonFilledSecondary
-							}
-						>
-							Options
-						</button>
-					</div>
+					<div className={stylesB.buttonWrapper}></div>
 				</HeaderBar>
 
 				<div className={styles.optionsWrapper}>
@@ -126,14 +148,23 @@ class Dashboard extends Component<IProps, IState> {
 								currentChild={0}
 								ref={this.joinFriendsCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										this.joinFriendsCard.current?.setNextChild();
+									}}
+								>
 									<img
 										src="icons/join-friends-icon.svg"
 										alt=""
 									></img>
 									<p>Add Friends</p>
 								</div>
-								<div></div>
+								<AddFriendsMenu
+									onClickCancel={() => {
+										this.joinFriendsCard.current?.setNextChild();
+									}}
+								/>
 							</MenuCard>
 						</div>
 
@@ -176,7 +207,39 @@ class Dashboard extends Component<IProps, IState> {
 								currentChild={0}
 								ref={this.createMatchCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										UserSingleton.getInstance()
+											.getUserInfo()
+											.colyseusClient?.create(
+												"game_room",
+												{
+													playerInfo: {
+														firebaseUID: UserSingleton.getInstance().getUserInfo()
+															.firebaseUser?.uid,
+														username: UserSingleton.getInstance().getUserInfo()
+															.displayName,
+													},
+												}
+											)
+											.then((room: Room<any>) => {
+												UserSingleton.getInstance().setUserInfo(
+													{
+														currentRoom: room,
+													}
+												);
+
+												this.setState({
+													currentState:
+														DashBoardState.RedirectCreateMatch,
+												});
+											})
+											.catch((e) => {
+												console.error("ERROR: ", e);
+											});
+									}}
+								>
 									<img
 										src="icons/create-match-icon.svg"
 										alt=""
@@ -207,51 +270,62 @@ class Dashboard extends Component<IProps, IState> {
 											undefined
 										);
 
-										// Fake searching for a lobby
-										const promise = new Promise((resolve) =>
-											setTimeout(resolve, 1500)
-										);
-
-										// Keep update-ing the lobby-info
-										//  Until a game starts.
-										promise.then(() => {
-											this.quickJoinMenu.current?.setLobbyInfo(
+										UserSingleton.getInstance()
+											?.getUserInfo()
+											?.colyseusClient?.joinOrCreate(
+												"quick_game_room",
 												{
-													lobbyId: 0,
-													lobbyName:
-														"QuickJoinLobby01",
-													passwordProtected: false,
-													players: [
-														"Appa",
-														"Momo",
-														"Zuko",
-														"Sokka",
-														"Katara",
-														"Iroh",
-														"Zhao",
-														"Ozai",
-														"Toph",
-														"Aang",
-														"Cabbage Merchant",
-														"King Boomi",
-														"Zuki",
-													],
-													gameInfo: {
-														minPlayers: 2,
-														maxPlayers: 6,
-														name: "Blackjack",
-														description:
-															"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-														cardLogo: new URL(
-															"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-														),
-														color: "#FFFFFF",
+													playerInfo: {
+														firebaseUID: UserSingleton.getInstance().getUserInfo()
+															.firebaseUser?.uid,
+														username: UserSingleton.getInstance().getUserInfo()
+															.displayName,
 													},
-													state:
-														"Waiting for players",
 												}
-											);
-										});
+											)
+											.then((room: Room<any>) => {
+												UserSingleton.getInstance().setUserInfo(
+													{
+														currentRoom: room,
+													}
+												);
+
+												room.state.onChange = (
+													changes: any
+												) => {
+													let players = [];
+													for (let key in room.state
+														.players) {
+														players.push(
+															room.state.players[
+																key
+															].username
+														);
+													}
+
+													this.quickJoinMenu.current?.setLobbyInfo(
+														{
+															lobbyId: room.id,
+															lobbyName:
+																room.state
+																	.roomName,
+															passwordProtected: false,
+															players: players,
+															gameInfo: {
+																minPlayers: 2,
+																maxPlayers: 6,
+																name:
+																	"Jacksnack",
+																description: "",
+																cardLogo: new URL(
+																	"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
+																),
+																color: "",
+															},
+														}
+													);
+												};
+											});
 									}}
 								>
 									<img
@@ -270,6 +344,9 @@ class Dashboard extends Component<IProps, IState> {
 									<QuickJoinMenu
 										ref={this.quickJoinMenu}
 										onClickCancel={() => {
+											UserSingleton.getInstance()
+												.getUserInfo()
+												.currentRoom?.leave();
 											this.quickJoinCard.current?.setNextChild();
 										}}
 									></QuickJoinMenu>

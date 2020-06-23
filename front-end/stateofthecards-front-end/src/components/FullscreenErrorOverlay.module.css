@@ -1,0 +1,21 @@
+.overlay {
+	align-items: center;
+	justify-content: center;
+	flex-direction: column;
+	z-index: 10;
+	background-color: rgb(0, 0, 0);
+	background-color: rgba(0, 0, 0, 0.8);
+}
+
+.visible {
+	display: flex;
+}
+
+.hidden {
+	display: none;
+}
+
+.errorMessage {
+	color: white;
+	font-size: 3vw;
+}

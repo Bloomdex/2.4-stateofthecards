@@ -1,0 +1,32 @@
+.frameWrapper {
+	display: flex;
+	height: 100%;
+	width: 100%;
+}
+
+.frame {
+	display: flex;
+	flex-grow: 1;
+	flex-direction: column;
+	justify-content: space-between;
+	align-items: center;
+	height: auto;
+	margin: 4%;
+	padding: 10px 10px;
+	border-radius: 6px;
+	background-color: lightgray;
+}
+
+.frame > p:nth-child(1) {
+	font-weight: bold;
+}
+
+.frame > .inputArea {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.frame > .inputArea > * {
+	margin: 5px 0;
+}

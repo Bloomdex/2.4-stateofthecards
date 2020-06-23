@@ -17,9 +17,19 @@
 	margin-right: 10px;
 }
 
+.searchWrapper > div:nth-child(2) > button {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.searchWrapper > div:nth-child(3) > button {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+
 /*------------------------------------------------Entries------------------------------------------------*/
 .entries {
 	grid-area: 2 / 1 / 2 / 1;
 	padding: 2vh 2vw;
-	overflow-y: scroll;
+	overflow-y: auto;
 }

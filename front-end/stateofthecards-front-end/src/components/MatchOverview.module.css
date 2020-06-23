@@ -1,0 +1,57 @@
+/*------------------------------------------------General------------------------------------------------*/
+.wrapper {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	overflow: none;
+}
+
+.overviewWrapper {
+	display: flex;
+	flex-direction: row;
+	flex-grow: 1;
+	overflow: auto;
+}
+
+/*------------------------------------------------Players------------------------------------------------*/
+.playerWrapper {
+	flex-grow: 1;
+	padding: 2vh 2vw;
+}
+
+/*------------------------------------------------Info------------------------------------------------*/
+.infoWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+	background-color: #525252;
+}
+
+.infoWrapper > * {
+	margin-top: 10px;
+	color: #ffffff;
+}
+
+.infoWrapper > *:nth-child(1) {
+	margin-top: 0;
+}
+
+.cardPreview {
+	height: 240px;
+	box-shadow: none;
+}
+
+.cardPreview > img {
+	width: 100%;
+	height: 100%;
+}
+
+/*------------------------------------------------Host actions------------------------------------------------*/
+.hostActions {
+	padding: 10px;
+	padding-bottom: 15px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}

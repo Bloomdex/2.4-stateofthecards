@@ -5,7 +5,7 @@ import { Redirect } from "react-router-dom";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import MenuCard from "./components/MenuCard";
 import FirebaseApp from "./config/Firebase";
-import LoginForm, { IUserInfo } from "./components/LoginForm";
+import LoginForm, { ILFUserInfo } from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 
 interface IProps {}
@@ -38,7 +38,7 @@ class Login extends Component<IProps, IState> {
 		};
 	}
 
-	onSubmitLogin = (userinfo: IUserInfo) => {
+	onSubmitLogin = (userinfo: ILFUserInfo) => {
 		if (this.state.pageState !== PageState.Loading) {
 			// While we are waiting for the promise show a loading screen.
 			this.setState({ pageState: PageState.Loading });
@@ -48,7 +48,7 @@ class Login extends Component<IProps, IState> {
 			//  Login to the back-end
 			FirebaseApp.auth()
 				.signInWithEmailAndPassword(
-					userinfo.username,
+					userinfo.email,
 					userinfo.password
 				)
 				.catch((error) => {
@@ -89,7 +89,7 @@ class Login extends Component<IProps, IState> {
 						<div className={styles.cardContentWrapper}>
 							<LoginForm
 								ref={this.loginForm}
-								onClickLogin={(userinfo: IUserInfo) => {
+								onClickLogin={(userinfo: ILFUserInfo) => {
 									this.onSubmitLogin(userinfo);
 								}}
 								onClickRegister={() => {

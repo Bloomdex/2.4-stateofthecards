@@ -13,7 +13,8 @@ interface IProps {
 }
 
 interface IState {
-	username: string;
+	email: string;
+	displayName: string;
 	password: string;
 	repeatPassword: string;
 	errorMessage: string;
@@ -28,7 +29,8 @@ class RegisterForm extends Component<IProps, IState> {
 		super(props);
 
 		this.state = {
-			username: "",
+			email: "",
+			displayName: "",
 			password: "",
 			repeatPassword: "",
 			errorMessage: "",
@@ -50,8 +52,12 @@ class RegisterForm extends Component<IProps, IState> {
 		);
 	}
 
-	onUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		this.setState({ username: event.target.value });
+	onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({ email: event.target.value });
+	};
+
+	onDisplayNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({ displayName: event.target.value });
 	};
 
 	onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -79,9 +85,26 @@ class RegisterForm extends Component<IProps, IState> {
 			// Register the user to the database.
 			FirebaseApp.auth()
 				.createUserWithEmailAndPassword(
-					this.state.username,
+					this.state.email,
 					this.state.password
 				)
+				.then((user) => {
+					user.user?.updateProfile({
+						displayName: this.state.displayName,
+					});
+
+					if (user.user) {
+						FirebaseApp.database()
+							.ref("users/" + user.user.uid)
+							.set({
+								displayName: this.state.displayName,
+								email: this.state.email,
+							})
+							.catch((error) =>
+								this.setState({ errorMessage: error.message })
+							);
+					}
+				})
 				.catch((error) => {
 					this.setState({ errorMessage: error.message });
 				});
@@ -119,11 +142,23 @@ class RegisterForm extends Component<IProps, IState> {
 							stylesB.interactiveFont + " " + stylesB.input
 						}
 						type="text"
-						name="Username"
-						placeholder="Username"
+						name="E-Mail"
+						placeholder="E-Mail"
 						required
 						autoFocus
-						onChange={this.onUsernameChange}
+						onChange={this.onEmailChange}
+					/>
+
+					<input
+						className={
+							stylesB.interactiveFont + " " + stylesB.input
+						}
+						type="text"
+						name="DisplayName"
+						placeholder="Display Name"
+						required
+						autoFocus
+						onChange={this.onDisplayNameChange}
 					/>
 
 					<input
@@ -142,7 +177,7 @@ class RegisterForm extends Component<IProps, IState> {
 						className={
 							stylesB.interactiveFont + " " + stylesB.input
 						}
-						id="password"
+						id="password-repeat"
 						name="RepeatPassword"
 						placeholder="Repeat Password"
 						type="password"

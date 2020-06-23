@@ -5,6 +5,9 @@ import stylesB from "./Base.module.css";
 import ServerListEntry from "./components/ServerListEntry";
 import ILobbyInfo from "./structures/ILobbyInfo";
 import HeaderBar from "./components/HeaderBar";
+import UserSingleton from "./config/UserSingleton";
+import { RoomAvailable } from "colyseus.js";
+import { FullscreenErrorOverlay } from "./components/FullscreenErrorOverlay";
 
 enum ServerListState {
 	Idle,
@@ -15,133 +18,65 @@ interface IProps {}
 
 interface IState {
 	currentState: ServerListState;
-	lobbies: ILobbyInfo[];
+	lobby: any;
+	games: RoomAvailable<any>[];
+	searchQuery: string;
+	errorMessage?: string;
 }
 
 class ServerList extends Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
 
-		this.state = { currentState: ServerListState.Idle, lobbies: [] };
+		this.state = {
+			currentState: ServerListState.Idle,
+			lobby: undefined,
+			games: [],
+			searchQuery: "",
+		};
 	}
 
 	componentDidMount() {
-		this.updateServerList();
+		this.joinLobby();
 	}
 
-	updateServerList(): void {
-		this.setState({
-			lobbies: [
-				{
-					lobbyId: 0,
-					lobbyName: "Appa's Leuke Lobby",
-					passwordProtected: true,
-					players: ["Appa", "Momo"],
-					state: "Waiting for players",
-					gameInfo: {
-						minPlayers: 2,
-						maxPlayers: 6,
-						name: "Blackjack",
-						description:
-							"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-						cardLogo: new URL(
-							"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-						),
-						color: "#FFFFFF",
-					},
-				},
-				{
-					lobbyId: 1,
-					lobbyName: "Zuko's 'Ik ben mijn eer kwijt' Lobby",
-					passwordProtected: true,
-					players: ["Zuko", "Zuko's Moeder"],
-					state: "Waiting for players",
-					gameInfo: {
-						minPlayers: 2,
-						maxPlayers: 6,
-						name: "Blackjack",
-						description:
-							"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-						cardLogo: new URL(
-							"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-						),
-						color: "#FFFFFF",
-					},
-				},
-				{
-					lobbyId: 2,
-					lobbyName: "Zuko's 'Ik ben mijn eer kwijt' Lobby",
-					passwordProtected: true,
-					players: ["Zuko", "Zuko's Moeder"],
-					state: "Waiting for players",
-					gameInfo: {
-						minPlayers: 2,
-						maxPlayers: 6,
-						name: "Blackjack",
-						description:
-							"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-						cardLogo: new URL(
-							"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-						),
-						color: "#FFFFFF",
-					},
-				},
-				{
-					lobbyId: 3,
-					lobbyName: "Zuko's 'Ik ben mijn eer kwijt' Lobby",
-					passwordProtected: true,
-					players: ["Zuko", "Zuko's Moeder"],
-					state: "Waiting for players",
-					gameInfo: {
-						minPlayers: 2,
-						maxPlayers: 6,
-						name: "Blackjack",
-						description:
-							"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-						cardLogo: new URL(
-							"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-						),
-						color: "#FFFFFF",
-					},
-				},
-				{
-					lobbyId: 4,
-					lobbyName: "Zuko's 'Ik ben mijn eer kwijt' Lobby",
-					passwordProtected: true,
-					players: ["Zuko", "Zuko's Moeder"],
-					state: "Waiting for players",
-					gameInfo: {
-						minPlayers: 2,
-						maxPlayers: 6,
-						name: "Blackjack",
-						description:
-							"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-						cardLogo: new URL(
-							"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-						),
-						color: "#FFFFFF",
-					},
-				},
-				{
-					lobbyId: 5,
-					lobbyName: "Zuko's 'Ik ben mijn eer kwijt' Lobby",
-					passwordProtected: true,
-					players: ["Zuko", "Zuko's Moeder"],
-					state: "Waiting for players",
-					gameInfo: {
-						minPlayers: 2,
-						maxPlayers: 6,
-						name: "Blackjack",
-						description:
-							"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-						cardLogo: new URL(
-							"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-						),
-						color: "#FFFFFF",
-					},
-				},
-			],
-		});
+	componentWillUnmount() {
+		//this.state.lobby.removeAllListeners();
+	}
+
+	onSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({ searchQuery: event.target.value });
+
+		if (event.target.value !== "") {
+			this.state.lobby.send("filter", {
+				name: "game_room",
+				metadata: { roomName: event.target.value },
+			});
+		} else {
+			this.state.lobby.send("filter", {
+				name: "game_room",
+				metadata: {},
+			});
+		}
+	};
+
+	async joinLobby() {
+		// get the lobby
+		this.setState(
+			{
+				lobby: await UserSingleton.getInstance()
+					?.getUserInfo()
+					?.colyseusClient?.joinOrCreate("lobby_room"),
+			},
+			() => {
+				this.state.lobby.onMessage(
+					"rooms",
+					(rooms: RoomAvailable<any>[]) => {
+						this.setState({ games: rooms });
+					}
+				);
+			}
+		);
 	}
 
 	render() {
@@ -154,6 +89,8 @@ class ServerList extends Component<IProps, IState> {
 	}
 
 	renderServerList() {
+		let showErrorMessage = this.state.errorMessage ? true : false;
+
 		return (
 			<div
 				className={
@@ -164,6 +101,16 @@ class ServerList extends Component<IProps, IState> {
 					stylesB.background
 				}
 			>
+				<FullscreenErrorOverlay
+					message={this.state.errorMessage}
+					buttonText="Back"
+					onClickButton={() => {
+						this.setState({
+							errorMessage: undefined,
+						});
+					}}
+					isVisible={showErrorMessage}
+				></FullscreenErrorOverlay>
 				<HeaderBar>
 					<div className={stylesB.buttonWrapper}>
 						<button
@@ -188,6 +135,7 @@ class ServerList extends Component<IProps, IState> {
 							type="text"
 							name="Search"
 							placeholder="Search"
+							onChange={this.onSearchChange}
 						></input>
 						<div className={stylesB.buttonWrapper}>
 							<button
@@ -200,14 +148,42 @@ class ServerList extends Component<IProps, IState> {
 								Filter
 							</button>
 						</div>
+						<div className={stylesB.buttonWrapper}>
+							<button
+								className={
+									stylesB.buttonBase +
+									" " +
+									stylesB.buttonFilledSecondary
+								}
+								onClick={() => {
+									this.state.lobby.send("refreshRoomList");
+								}}
+							>
+								Refresh
+							</button>
+						</div>
 					</div>
 				</HeaderBar>
 				<div className={styles.entries}>
-					{this.state.lobbies.map((value, index) => {
+					{this.state.games.map((value, index) => {
+						let iconPath: string;
+
+						if (value.metadata.passwordProtected)
+							iconPath = "icons/lock-icon.svg";
+						else iconPath = "icons/open-match-icon.svg";
+
 						return (
 							<ServerListEntry
-								key={value.lobbyId}
-								lobbyInfo={value}
+								roomId={value.roomId}
+								iconUrl={iconPath}
+								key={value.roomId}
+								serverName={value.metadata.roomName}
+								gameName="GAME_NAME"
+								playerCount={value.clients}
+								maxPlayerCount={value.maxClients}
+								onJoinFailed={(e) => {
+									this.setState({ errorMessage: e.message });
+								}}
 							/>
 						);
 					})}

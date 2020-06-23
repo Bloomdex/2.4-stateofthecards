@@ -1,14 +1,11 @@
 import firebase from "firebase";
-
-type userInfo = {
-	firebaseUser?: firebase.User;
-	username?: string;
-};
+import IUserInfo from "../structures/IUserInfo";
+import { Room } from "colyseus.js";
 
 export default class UserSingleton {
 	private static _instance: UserSingleton;
 
-	_userInfo: userInfo;
+	_userInfo: IUserInfo;
 
 	public static getInstance(): UserSingleton {
 		if (UserSingleton._instance == null) {
@@ -24,14 +21,18 @@ export default class UserSingleton {
 			);
 		}
 
-		this._userInfo = { firebaseUser: undefined, username: undefined };
+		this._userInfo = {
+			firebaseUser: undefined,
+			email: undefined,
+			displayName: undefined,
+		};
 	}
 
-	getUserInfo(): userInfo {
+	getUserInfo(): IUserInfo {
 		return this._userInfo;
 	}
 
-	setUserInfo(info: userInfo) {
-		this._userInfo = { ...info };
+	setUserInfo(info: IUserInfo) {
+		this._userInfo = { ...this._userInfo, ...info };
 	}
 }

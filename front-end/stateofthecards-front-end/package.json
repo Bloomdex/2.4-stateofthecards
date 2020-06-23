@@ -12,6 +12,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-google-recaptcha": "^1.1.2",
     "@types/react-router-dom": "^5.1.5",
+    "colyseus.js": "^0.13.1",
     "firebase": "^7.14.6",
     "react": "^16.13.1",
     "react-card-flip": "^1.0.10",

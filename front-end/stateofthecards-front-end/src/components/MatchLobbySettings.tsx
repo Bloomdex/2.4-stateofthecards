@@ -6,6 +6,7 @@ import MenuCard from "./MenuCard";
 import IGameInfo from "../structures/IGameInfo";
 import CollapsibleContent from "./CollapsibleContent";
 import TabSelection from "./TabSelection";
+import UserSingleton from "../config/UserSingleton";
 
 interface IProps {}
 
@@ -15,6 +16,20 @@ class MatchLobbySettings extends Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
 	}
+
+	onInputServerNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		UserSingleton.getInstance()
+			.getUserInfo()
+			.currentRoom?.send("setRoomName", event.target.value);
+	};
+
+	onInputServerPasswordChange = (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		UserSingleton.getInstance()
+			.getUserInfo()
+			.currentRoom?.send("setRoomPassword", event.target.value);
+	};
 
 	render() {
 		const testGame: IGameInfo = {
@@ -47,11 +62,23 @@ class MatchLobbySettings extends Component<IProps, IState> {
 							<input
 								className={stylesB.input}
 								placeholder="Server name"
+								maxLength={40}
+								onChange={this.onInputServerNameChange}
+								defaultValue={
+									UserSingleton.getInstance().getUserInfo()
+										.currentRoom?.state.roomName
+								}
 							/>
 
 							<input
 								className={stylesB.input}
 								placeholder="Server password"
+								maxLength={64}
+								onChange={this.onInputServerPasswordChange}
+								defaultValue={
+									UserSingleton.getInstance().getUserInfo()
+										.currentRoom?.state.roomPassword
+								}
 							/>
 
 							<div className={styles.friendsOnlySetting}>
@@ -86,7 +113,7 @@ class MatchLobbySettings extends Component<IProps, IState> {
 								<p>Max player count:</p>
 								<input
 									type="number"
-									value="4"
+									defaultValue="4"
 									min="1"
 									max="10"
 								/>

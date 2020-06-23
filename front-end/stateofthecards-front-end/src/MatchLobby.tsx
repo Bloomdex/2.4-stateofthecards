@@ -9,6 +9,9 @@ import MatchLobbySettings from "./components/MatchLobbySettings";
 import MatchLobbyPlayers from "./components/MatchLobbyPlayers";
 import MatchLobbyOverview from "./components/MatchOverview";
 import TabSelection from "./components/TabSelection";
+import { Room } from "colyseus.js";
+import UserSingleton from "./config/UserSingleton";
+import { FullscreenErrorOverlay } from "./components/FullscreenErrorOverlay";
 
 interface IProps {}
 
@@ -24,9 +27,10 @@ enum Tabs {
 }
 
 interface IState {
-	currentState: MatchLobbyState;
-	lobbyInfo: ILobbyInfo;
-	currentTab: Tabs;
+	currentState?: MatchLobbyState;
+	lobbyInfo?: ILobbyInfo;
+	currentTab?: Tabs;
+	errorMessage?: string;
 }
 
 class MatchLobby extends React.Component<IProps, IState> {
@@ -35,10 +39,49 @@ class MatchLobby extends React.Component<IProps, IState> {
 	}
 
 	componentWillMount() {
+		const search = window.location.search;
+		const params = new URLSearchParams(search);
+		const lobbyId = params.get("id");
+
+		if (!UserSingleton.getInstance().getUserInfo().currentRoom && lobbyId) {
+			UserSingleton.getInstance()
+				.getUserInfo()
+				.colyseusClient?.joinById(lobbyId, {
+					playerInfo: {
+						firebaseUID: UserSingleton.getInstance().getUserInfo()
+							.firebaseUser?.uid,
+						username: UserSingleton.getInstance().getUserInfo()
+							.displayName,
+					},
+				})
+				.then((room: Room<any>) => {
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: room,
+					});
+
+					room.onStateChange(() => {
+						this.forceUpdate();
+					});
+				})
+				.catch((e) => {
+					this.setState({ errorMessage: "Info: " + e.message });
+				});
+		}
+
 		this.setState({
 			currentState: MatchLobbyState.Idle,
 			currentTab: Tabs.Overview,
 		});
+	}
+
+	componentDidMount() {
+		// Rerender has to be forced since react somehow does not
+		//  notice the state of the room has updated.
+		UserSingleton.getInstance()
+			.getUserInfo()
+			.currentRoom?.onStateChange(() => {
+				this.forceUpdate();
+			});
 	}
 
 	switchTab(index: number) {
@@ -61,8 +104,20 @@ class MatchLobby extends React.Component<IProps, IState> {
 	}
 
 	renderLobby() {
+		let showErrorMessage = this.state.errorMessage ? true : false;
+
 		return (
 			<div className={styles.wrapper}>
+				<FullscreenErrorOverlay
+					message={this.state.errorMessage}
+					buttonText="Return to Server List"
+					onClickButton={() => {
+						this.setState({
+							currentState: MatchLobbyState.RedirectServerList,
+						});
+					}}
+					isVisible={showErrorMessage}
+				></FullscreenErrorOverlay>
 				<HeaderBar>
 					<div className={stylesB.buttonWrapper}>
 						<button
@@ -72,6 +127,9 @@ class MatchLobby extends React.Component<IProps, IState> {
 								stylesB.buttonFilledTertiary
 							}
 							onClick={() => {
+								UserSingleton.getInstance()
+									.getUserInfo()
+									.currentRoom?.leave();
 								this.setState({
 									currentState:
 										MatchLobbyState.RedirectServerList,
@@ -83,7 +141,12 @@ class MatchLobby extends React.Component<IProps, IState> {
 					</div>
 
 					<div className={styles.infoWrapper}>
-						<p className={stylesH.headerTextLarge}>LOBBY NAME</p>
+						<p className={stylesH.headerTextLarge}>
+							{
+								UserSingleton.getInstance().getUserInfo()
+									.currentRoom?.state.roomName
+							}
+						</p>
 					</div>
 
 					<TabSelection

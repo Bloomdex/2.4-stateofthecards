@@ -3,19 +3,19 @@ import styles from "./LoginForm.module.css";
 import stylesB from "../Base.module.css";
 import stylesL from "../Login.module.css";
 
-export interface IUserInfo {
-	username: string;
+export interface ILFUserInfo {
+	email: string;
 	password: string;
 }
 
 interface IProps {
-	onClickLogin: (userinfo: IUserInfo) => void;
+	onClickLogin: (userinfo: ILFUserInfo) => void;
 	onClickRegister: () => void;
 }
 
 interface IState {
 	errorMessage: string;
-	username: string;
+	email: string;
 	password: string;
 }
 
@@ -25,13 +25,13 @@ class LoginForm extends Component<IProps, IState> {
 
 		this.state = {
 			errorMessage: "",
-			username: "",
+			email: "",
 			password: "",
 		};
 	}
 
-	onUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		this.setState({ username: event.target.value });
+	onEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState({ email: event.target.value });
 	};
 
 	onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,11 +56,11 @@ class LoginForm extends Component<IProps, IState> {
 							stylesB.interactiveFont + " " + stylesB.input
 						}
 						type="text"
-						name="Username"
-						placeholder="Username"
+						name="E-mail"
+						placeholder="E-mail"
 						required
 						autoFocus
-						onChange={this.onUsernameChange}
+						onChange={this.onEmailChange}
 					/>
 
 					<input
@@ -104,7 +104,7 @@ class LoginForm extends Component<IProps, IState> {
 							event.preventDefault();
 
 							this.props.onClickLogin({
-								username: this.state.username,
+								email: this.state.email,
 								password: this.state.password,
 							});
 						}}

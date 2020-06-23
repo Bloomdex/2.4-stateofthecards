@@ -8,10 +8,13 @@ import {
 import Login from "./Login";
 import Dashboard from "./Dashboard";
 import styles from "./App.module.css";
+import stylesB from "./Base.module.css";
 import ServerList from "./ServerList";
 import MatchLobby from "./MatchLobby";
 import FirebaseApp from "./config/Firebase";
 import UserSingleton from "./config/UserSingleton";
+import * as Colyseus from "colyseus.js";
+import GameScreen from "./GameScreen";
 
 interface IProps {}
 
@@ -34,10 +37,18 @@ class App extends Component<IProps, IState> {
 		FirebaseApp.auth().onAuthStateChanged((user) => {
 			this.setState({ checkAuthState: true });
 
+			let client = new Colyseus.Client("ws://localhost:2567");
+
 			if (user) {
 				UserSingleton.getInstance()?.setUserInfo({
 					firebaseUser: user,
+					colyseusClient: client,
+					displayName: user.displayName,
+					email: user.email,
 				});
+
+				client.auth.username = user.uid;
+				client.auth.save();
 			} else {
 				UserSingleton.getInstance().setUserInfo({
 					firebaseUser: undefined,
@@ -66,6 +77,9 @@ class App extends Component<IProps, IState> {
 
 		const loggedIn = (
 			<Switch>
+				<Route path="/tempGamePage">
+					<GameScreen />
+				</Route>
 				<Route path="/match">
 					<MatchLobby />
 				</Route>
@@ -87,7 +101,15 @@ class App extends Component<IProps, IState> {
 			<Router>
 				<div className="App">
 					<div className={styles.contentPanel}>{chosenRoute}</div>
-					<div className={styles.alertPanel}>
+					<div
+						className={
+							stylesB.background +
+							" " +
+							stylesB.wrapper +
+							" " +
+							styles.alertPanel
+						}
+					>
 						<h1>
 							Please turn the device horizontally. (Landscape
 							Mode)

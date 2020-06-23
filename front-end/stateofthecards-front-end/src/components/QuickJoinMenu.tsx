@@ -73,7 +73,7 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 							className={
 								stylesB.buttonBase +
 								" " +
-								stylesB.buttonFilledPrimary
+								stylesB.buttonFilledTertiary
 							}
 							onClick={() => {
 								this.onClickCancel();
@@ -94,7 +94,7 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 					<div className={styles.gameInfo}>
 						<p>{this.state.lobbyInfo?.gameInfo.name}</p>
 						<p>
-							{this.state.lobbyInfo?.state} (
+							Waiting for players... (
 							{this.state.lobbyInfo?.players.length}/
 							{this.state.lobbyInfo?.gameInfo.maxPlayers})
 						</p>
@@ -117,7 +117,7 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 							className={
 								stylesB.buttonBase +
 								" " +
-								stylesB.buttonFilledPrimary
+								stylesB.buttonFilledTertiary
 							}
 							onClick={() => {
 								this.onClickCancel();

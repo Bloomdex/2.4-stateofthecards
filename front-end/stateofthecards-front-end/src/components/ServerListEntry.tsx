@@ -2,13 +2,27 @@ import React from "react";
 import stylesLE from "./BasicListEntry.module.css";
 import styles from "./ServerListEntry.module.css";
 import ILobbyInfo from "../structures/ILobbyInfo";
+import UserSingleton from "../config/UserSingleton";
+import { Room } from "colyseus.js";
+import { Redirect } from "react-router-dom";
 
 interface IProps {
-	lobbyInfo: ILobbyInfo;
+	roomId: string;
+	iconUrl: string;
+	serverName: string;
+	gameName: string;
+	playerCount: number;
+	maxPlayerCount: number;
+	onJoinFailed: (error: any) => void;
+}
+
+enum ServerListEntryState {
+	Idle,
+	RedirectJoinGame,
 }
 
 interface IState {
-	lobbyInfo: ILobbyInfo;
+	currentState: ServerListEntryState;
 }
 
 class ServerListEntry extends React.Component<IProps, IState> {
@@ -16,26 +30,70 @@ class ServerListEntry extends React.Component<IProps, IState> {
 		super(props);
 
 		this.state = {
-			lobbyInfo: this.props.lobbyInfo,
+			currentState: ServerListEntryState.Idle,
 		};
 	}
 
 	render() {
+		switch (this.state.currentState) {
+			case ServerListEntryState.Idle:
+				return this.renderServerListEntry();
+			case ServerListEntryState.RedirectJoinGame:
+				return (
+					<Redirect
+						to={
+							"/match?id=" +
+							UserSingleton.getInstance().getUserInfo()
+								.currentRoom?.id
+						}
+					></Redirect>
+				);
+				break;
+		}
+	}
+
+	renderServerListEntry() {
 		return (
-			<div className={stylesLE.entry + " " + styles.entry}>
+			<div
+				className={stylesLE.entry + " " + styles.entry}
+				onClick={() => {
+					UserSingleton.getInstance()
+						.getUserInfo()
+						.colyseusClient?.joinById(this.props.roomId, {
+							playerInfo: {
+								firebaseUID: UserSingleton.getInstance().getUserInfo()
+									.firebaseUser?.uid,
+								username: UserSingleton.getInstance().getUserInfo()
+									.displayName,
+							},
+						})
+						.then((room: Room<any>) => {
+							UserSingleton.getInstance().setUserInfo({
+								currentRoom: room,
+							});
+
+							this.setState({
+								currentState:
+									ServerListEntryState.RedirectJoinGame,
+							});
+						})
+						.catch((e) => {
+							this.props.onJoinFailed(e);
+						});
+				}}
+			>
 				<div className={stylesLE.leftInfo}>
-					<img src="icons/open-match-icon.svg" alt="State" />
-					<p>{this.props.lobbyInfo.lobbyName}</p>
+					<img src={this.props.iconUrl} alt="State" />
+					<p>{this.props.serverName}</p>
 				</div>
 
 				<div className={styles.gameInfo}>
-					<p>{this.props.lobbyInfo.gameInfo.name}</p>
+					<p>{this.props.gameName}</p>
 				</div>
 
 				<div className={stylesLE.rightInfo}>
 					<p>
-						{this.props.lobbyInfo.players.length}/
-						{this.props.lobbyInfo.gameInfo.maxPlayers}
+						{this.props.playerCount}/{this.props.maxPlayerCount}
 					</p>
 					<div className={styles.joinIconsWrapper}>
 						<img src="icons/join-match-icon.svg" alt="Join" />

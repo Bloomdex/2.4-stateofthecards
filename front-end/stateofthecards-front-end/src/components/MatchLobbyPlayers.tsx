@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import styles from "./MatchLobbyPlayers.module.css";
 import MatchPlayerListEntry from "./MatchPlayerListEntry";
-import MatchFriendListEntry from "./MatchFriendListEntry";
 
 interface IProps {}
 
@@ -15,10 +14,30 @@ class MatchLobbyPlayers extends Component<IProps, IState> {
 	render() {
 		return (
 			<div className={styles.pageWrapper}>
-				<MatchFriendListEntry />
-				<MatchFriendListEntry />
-				<MatchFriendListEntry />
-				<MatchFriendListEntry />
+				<MatchPlayerListEntry
+					key="1"
+					playerName="G3t"
+					iconUrl={"icons/friends-icon.svg"}
+					actionLabel={"Double click to invite."}
+				/>
+				<MatchPlayerListEntry
+					key="2"
+					playerName="R3kt"
+					iconUrl={"icons/friends-icon.svg"}
+					actionLabel={"Double click to invite."}
+				/>
+				<MatchPlayerListEntry
+					key="3"
+					playerName="U"
+					iconUrl={"icons/friends-icon.svg"}
+					actionLabel={"Double click to invite."}
+				/>
+				<MatchPlayerListEntry
+					key="4"
+					playerName="Knub"
+					iconUrl={"icons/friends-icon.svg"}
+					actionLabel={"Double click to invite."}
+				/>
 			</div>
 		);
 	}

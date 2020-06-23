@@ -1,8 +1,10 @@
 import React, { Component } from "react";
 import styles from "./MatchOverview.module.css";
-import stylesB from "./Base.module.css";
-import GameCard from "./GameCard";
+import stylesB from "../Base.module.css";
+import MenuCard from "./MenuCard";
 import IGameInfo from "../structures/IGameInfo";
+import MatchPlayerListEntry from "./MatchPlayerListEntry";
+import UserSingleton from "../config/UserSingleton";
 
 interface IProps {}
 
@@ -26,11 +28,94 @@ class MatchOverview extends Component<IProps, IState> {
 			color: "#FFFFFF",
 		};
 
+		const statePlayers = UserSingleton.getInstance().getUserInfo()
+			.currentRoom?.state.players;
+
+		let isHost = false;
+
+		if (
+			UserSingleton.getInstance().getUserInfo().currentRoom?.state
+				.hostPlayer ===
+			UserSingleton.getInstance().getUserInfo().currentRoom?.sessionId
+		) {
+			isHost = true;
+		}
+
+		const playerMap: JSX.Element[] = [];
+		for (let key in statePlayers) {
+			let player = statePlayers[key];
+			let iconUrl = "icons/full-match-icon.svg";
+			let actionLabel = "";
+
+			if (
+				UserSingleton.getInstance().getUserInfo().currentRoom?.state
+					.hostPlayer === key
+			) {
+				iconUrl = "icons/crown-icon.svg";
+				actionLabel = "";
+
+				if (!isHost) {
+					actionLabel = "(Double click to add as friend.)";
+				}
+			} else if (isHost) {
+				actionLabel = "(Double click to kick.)";
+			} else if (!isHost) {
+				if (
+					key !==
+					UserSingleton.getInstance().getUserInfo().currentRoom
+						?.sessionId
+				) {
+					actionLabel = "(Double click to add as friend.)";
+				}
+			}
+
+			playerMap.push(
+				<MatchPlayerListEntry
+					key={key}
+					playerName={player.username}
+					iconUrl={iconUrl}
+					actionLabel={actionLabel}
+				></MatchPlayerListEntry>
+			);
+		}
+
 		return (
-			<div>
-				<a href="https://www.youtube.com/watch?v=vpJQk02KJ7Y">
-					One Chump Lil Pump
-				</a>
+			<div className={styles.wrapper}>
+				<div className={styles.overviewWrapper}>
+					<div className={styles.playerWrapper}>{playerMap}</div>
+
+					<div className={styles.infoWrapper}>
+						<MenuCard
+							cssClass={styles.cardPreview}
+							currentChild={0}
+						>
+							<img src={testGame.cardLogo.toString()}></img>
+							<div />
+						</MenuCard>
+
+						<p>Max player count: {testGame.maxPlayers}</p>
+					</div>
+				</div>
+
+				<div
+					className={
+						stylesB.buttonWrapper +
+						" " +
+						stylesB.backgroundDark +
+						" " +
+						styles.hostActions
+					}
+				>
+					<button
+						className={
+							stylesB.buttonBase +
+							" " +
+							stylesB.buttonFilledPrimary
+						}
+					>
+						Start match (2/{testGame.maxPlayers})
+					</button>
+				</div>
 			</div>
 		);
 	}
