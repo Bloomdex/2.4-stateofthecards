@@ -14,7 +14,7 @@ import MatchLobby from "./MatchLobby";
 import FirebaseApp from "./config/Firebase";
 import UserSingleton from "./config/UserSingleton";
 import * as Colyseus from "colyseus.js";
-import GameScreen from "./GameScreen";
+import CreateGameScreen from "./CreateGameScreen";
 
 interface IProps {}
 
@@ -47,8 +47,9 @@ class App extends Component<IProps, IState> {
 					email: user.email,
 				});
 
-				client.auth.username = user.uid;
-				client.auth.save();
+				if (!client.auth.username) {
+					client.auth.username = user.uid;
+				}
 			} else {
 				UserSingleton.getInstance().setUserInfo({
 					firebaseUser: undefined,
@@ -59,7 +60,7 @@ class App extends Component<IProps, IState> {
 		});
 	}
 
-	componentWillMount() {
+	componentDidMount() {
 		this.authListener();
 	}
 
@@ -77,8 +78,8 @@ class App extends Component<IProps, IState> {
 
 		const loggedIn = (
 			<Switch>
-				<Route path="/tempGamePage">
-					<GameScreen />
+				<Route path="/create">
+					<CreateGameScreen />
 				</Route>
 				<Route path="/match">
 					<MatchLobby />

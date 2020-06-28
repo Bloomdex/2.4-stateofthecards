@@ -1,0 +1,101 @@
+.wrapper:hover,
+.wrapper:active {
+	cursor: pointer;
+}
+
+/*------------------------------------------------Card------------------------------------------------*/
+.card {
+	border-radius: 10px;
+	position: relative;
+	margin: 20px;
+	width: 180px;
+	height: 270px;
+	overflow: hidden;
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+	transform-origin: center top;
+	transform-style: preserve-3d;
+	transform: translateZ(0);
+	transition: 0.3s;
+}
+
+.card:after {
+	position: absolute;
+	content: "";
+	z-index: 10;
+	width: 200%;
+	height: 100%;
+	top: -90%;
+	left: -20px;
+	opacity: 0.1;
+	transform: rotate(45deg);
+	background: linear-gradient(
+		to top,
+		transparent,
+		#fff 15%,
+		rgba(255, 255, 255, 0.5)
+	);
+	transition: 0.3s;
+}
+
+.card:hover,
+.card:focus,
+.card:active {
+	box-shadow: 0 8px 16px 3px rgba(0, 0, 0, 0.5);
+	transform: translateY(-3px) scale(1.05) rotateX(15deg);
+}
+
+.card:hover:after,
+.card:focus:after,
+.card:active:after {
+	transform: rotate(25deg);
+	top: -40%;
+	opacity: 0.15;
+}
+
+/*------------------------------------------------Card image------------------------------------------------*/
+.card img {
+	width: 100%;
+	min-height: 100%;
+}
+
+/*------------------------------------------------Card caption------------------------------------------------*/
+.card .slideOut {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: flex-end;
+}
+
+.card .slideOut {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 10px;
+	padding-bottom: 10px;
+	font-size: 20px;
+	background: rgba(0, 0, 0, 0);
+	text-shadow: 1px 1px 0px rgba(0, 0, 0, 0.6);
+	color: #fff;
+	transform: translateY(100%);
+	transition: 0.3s;
+}
+
+.card .slideOut img {
+	width: 40px;
+	cursor: pointer;
+}
+
+.card .slideOut img:hover {
+	filter: brightness(1.4);
+}
+
+.card .slideOut img:active {
+	filter: brightness(1);
+}
+
+.card:hover .slideOut,
+.card:focus .slideOut,
+.card:active .slideOut {
+	transform: none;
+}

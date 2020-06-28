@@ -88,12 +88,6 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 			}
 		}
 
-		// ...........................................................
-		FirebaseApp.database()
-			.ref("friends")
-			.once("value", (snapshot) => {})
-			.then((val: any) => {});
-
 		FirebaseApp.database()
 			.ref("friends")
 			.once("value", (snapshot) => {
@@ -126,7 +120,7 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 
 				switch (friendshipStatus) {
 					case FriendshipStatus.REQUEST:
-						this.createRequest(userId, recipientId);
+						this.createRequest(recipientId);
 						break;
 					case FriendshipStatus.REQUESTED:
 						this.setState({
@@ -172,10 +166,20 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 					showAddButton: true,
 				});
 			});
+
+		const userId = UserSingleton.getInstance().getUserInfo().firebaseUser
+			?.uid;
+
+		FirebaseApp.database()
+			.ref("users/" + userId + "/friends")
+			.push({ friendId: friendDocId });
 	}
 
-	createRequest(userId: string | undefined, recipientId: string | undefined) {
-		if (!userId || !recipientId) return;
+	createRequest(recipientId: string | undefined) {
+		if (!recipientId) return;
+
+		const userId = UserSingleton.getInstance().getUserInfo().firebaseUser
+			?.uid;
 
 		// add the user
 		FirebaseApp.database()
@@ -200,6 +204,10 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 					showAddButton: true,
 				});
 			});
+
+		FirebaseApp.database()
+			.ref("users/" + userId + "/friends")
+			.push({ friendId: userId + recipientId });
 	}
 
 	render() {

@@ -7,36 +7,32 @@ interface IProps {}
 interface IState {}
 
 class MatchLobbyPlayers extends Component<IProps, IState> {
-	constructor(props: IProps) {
-		super(props);
-	}
-
 	render() {
 		return (
 			<div className={styles.pageWrapper}>
 				<MatchPlayerListEntry
 					key="1"
+					sessionId=""
+					firebaseUid=""
 					playerName="G3t"
-					iconUrl={"icons/friends-icon.svg"}
-					actionLabel={"Double click to invite."}
 				/>
 				<MatchPlayerListEntry
 					key="2"
+					sessionId=""
+					firebaseUid=""
 					playerName="R3kt"
-					iconUrl={"icons/friends-icon.svg"}
-					actionLabel={"Double click to invite."}
 				/>
 				<MatchPlayerListEntry
 					key="3"
+					sessionId=""
+					firebaseUid=""
 					playerName="U"
-					iconUrl={"icons/friends-icon.svg"}
-					actionLabel={"Double click to invite."}
 				/>
 				<MatchPlayerListEntry
 					key="4"
+					sessionId=""
+					firebaseUid=""
 					playerName="Knub"
-					iconUrl={"icons/friends-icon.svg"}
-					actionLabel={"Double click to invite."}
 				/>
 			</div>
 		);

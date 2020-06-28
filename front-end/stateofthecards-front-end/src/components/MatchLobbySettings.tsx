@@ -1,20 +1,39 @@
 import React, { Component } from "react";
 import styles from "./MatchLobbySettings.module.css";
 import stylesB from "../Base.module.css";
-import GameCard from "./GameCard";
-import MenuCard from "./MenuCard";
-import IGameInfo from "../structures/IGameInfo";
 import CollapsibleContent from "./CollapsibleContent";
 import TabSelection from "./TabSelection";
 import UserSingleton from "../config/UserSingleton";
+import FirebaseApp from "../config/Firebase";
+import LogoCard from "./LogoCard";
 
 interface IProps {}
 
-interface IState {}
+enum Tab {
+	AllGames,
+	FavoriteGames,
+	MyGames,
+}
+
+interface IState {
+	currentTab: Tab;
+	allGames: JSX.Element[];
+	favoriteGames: JSX.Element[];
+}
 
 class MatchLobbySettings extends Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
+
+		this.state = {
+			currentTab: Tab.AllGames,
+			allGames: [],
+			favoriteGames: [],
+		};
+	}
+
+	componentWillMount() {
+		this.loadAllGames();
 	}
 
 	onInputServerNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -32,33 +51,56 @@ class MatchLobbySettings extends Component<IProps, IState> {
 	};
 
 	render() {
-		const testGame: IGameInfo = {
-			minPlayers: 2,
-			maxPlayers: 6,
-			name: "Blackjack",
-			description:
-				"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-			cardLogo: new URL(
-				"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-			),
-			color: "#FFFFFF",
-		};
-
 		return (
 			<div className={styles.pageWrapper}>
-				<div className={styles.sidePanel + " " + styles.gameSettings}>
+				<div className={styles.sidePanel}>
+					<CollapsibleContent
+						name="Server games"
+						cssClass=""
+						cssClassHeader={stylesB.collapsibleHeader}
+						cssClassContent={stylesB.collapsibleContent}
+						isCollapsed={false}
+					>
+						<div className={styles.settings}>
+							<input
+								className={stylesB.input}
+								placeholder="Search..."
+							></input>
+
+							<TabSelection
+								onButtonClicked={(i) => {
+									this.switchTab(i);
+								}}
+								buttons={[
+									"All Games",
+									"Favorite games",
+									"My Games",
+								]}
+								cssClass={styles.filterButtons}
+								cssButtonWrapperClass={stylesB.buttonWrapper}
+								cssButtonActiveClass={
+									stylesB.buttonBase +
+									" " +
+									stylesB.buttonFilledPrimary
+								}
+								cssButtonInactiveClass={
+									stylesB.buttonBase +
+									" " +
+									stylesB.buttonFilledSecondary
+								}
+							/>
+						</div>
+						<div />
+					</CollapsibleContent>
+
 					<CollapsibleContent
 						name="Server settings"
 						cssClass=""
-						cssClassHeader={styles.collapsibleHeader}
-						cssClassContent={styles.collapsibleContent}
+						cssClassHeader={stylesB.collapsibleHeader}
+						cssClassContent={stylesB.collapsibleContent}
 						isCollapsed={false}
 					>
-						<div
-							className={
-								styles.settings + " " + styles.serverSettings
-							}
-						>
+						<div className={styles.settings}>
 							<input
 								className={stylesB.input}
 								placeholder="Server name"
@@ -80,94 +122,138 @@ class MatchLobbySettings extends Component<IProps, IState> {
 										.currentRoom?.state.roomPassword
 								}
 							/>
-
-							<div className={styles.friendsOnlySetting}>
-								<p>Friends only: </p>
-								<input type="checkbox" />
-							</div>
-						</div>
-						<div />
-					</CollapsibleContent>
-
-					<CollapsibleContent
-						name="Match settings"
-						cssClass=""
-						cssClassHeader={styles.collapsibleHeader}
-						cssClassContent={styles.collapsibleContent}
-						isCollapsed={true}
-					>
-						<div
-							className={
-								styles.settings + " " + styles.matchSettings
-							}
-						>
-							<MenuCard
-								cssClass={styles.cardPreview}
-								currentChild={0}
-							>
-								<img src={testGame.cardLogo.toString()}></img>
-								<div />
-							</MenuCard>
-
-							<div className={styles.playerCountSetting}>
-								<p>Max player count:</p>
-								<input
-									type="number"
-									defaultValue="4"
-									min="1"
-									max="10"
-								/>
-							</div>
 						</div>
 						<div />
 					</CollapsibleContent>
 				</div>
 
-				<div className={styles.sidePanel + " " + styles.searchList}>
-					<input
-						className={stylesB.input}
-						placeholder="Search..."
-					></input>
-
-					<TabSelection
-						onButtonClicked={(i) => console.log(i)}
-						buttons={[
-							"Monthly Popular Games",
-							"Favorites",
-							"My Games",
-							"Friends Games",
-						]}
-						cssClass={styles.filterButtons}
-						cssButtonWrapperClass={stylesB.buttonWrapper}
-						cssButtonActiveClass={
-							stylesB.buttonBase +
-							" " +
-							stylesB.buttonFilledPrimary
-						}
-						cssButtonInactiveClass={
-							stylesB.buttonBase +
-							" " +
-							stylesB.buttonFilledSecondary
-						}
-					/>
-				</div>
-
-				<div className={styles.gamesCollection}>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-					<GameCard game={testGame}></GameCard>
-				</div>
+				{this.renderTab()}
 			</div>
 		);
+	}
+
+	switchTab(index: number) {
+		if (index === 0) {
+			this.loadAllGames();
+		} else if (index === 1) {
+			this.loadFavoriteGames();
+		}
+	}
+
+	renderTab() {
+		switch (this.state.currentTab) {
+			case Tab.AllGames:
+				return (
+					<div className={styles.gamesCollection}>
+						{this.state.allGames}
+					</div>
+				);
+			case Tab.FavoriteGames:
+				return (
+					<div className={styles.gamesCollection}>
+						{this.state.favoriteGames}
+					</div>
+				);
+			case Tab.MyGames:
+				return <div />;
+		}
+	}
+
+	loadAllGames() {
+		FirebaseApp.database()
+			.ref("/games")
+			.once("value", (snapshot) => {
+				let allGames: JSX.Element[] = [];
+
+				snapshot.forEach((value) => {
+					if (value) {
+						const game = value.val();
+						const key = value.key!;
+
+						const gameInfo = {
+							identifier: key,
+							minPlayers: game.minPlayers,
+							maxPlayers: game.maxPlayers,
+							name: game.name,
+							description: game.description,
+							cardLogo: game.cardLogo,
+							color: game.color,
+							author: game.author,
+						};
+
+						allGames.push(
+							<LogoCard
+								key={gameInfo.identifier}
+								game={gameInfo}
+								onClickCard={() =>
+									UserSingleton.getInstance()
+										.getUserInfo()
+										.currentRoom?.send(
+											"setGame",
+											gameInfo.identifier
+										)
+								}
+							></LogoCard>
+						);
+					}
+				});
+
+				this.setState({ allGames: allGames, currentTab: Tab.AllGames });
+			});
+	}
+
+	async loadFavoriteGames() {
+		const userUid = UserSingleton.getInstance().getUserInfo().firebaseUser
+			?.uid;
+		let favoriteGameKeys: string[] = [];
+
+		await FirebaseApp.database()
+			.ref("users/" + userUid + "/favorites")
+			.once("value", (snapshot) => {
+				snapshot.forEach((value) => {
+					if (value && value.key) {
+						favoriteGameKeys.push(value.key);
+					}
+				});
+			});
+
+		if (!favoriteGameKeys) return;
+
+		let favoriteGames: JSX.Element[] = [];
+		for (let i = 0; i < favoriteGameKeys.length; i++) {
+			let gameKey = favoriteGameKeys[i];
+
+			await FirebaseApp.database()
+				.ref("/games/" + gameKey)
+				.once("value", (snapshot) => {
+					const game = snapshot.val();
+
+					if (game) {
+						const gameInfo = {
+							identifier: gameKey,
+							minPlayers: game.minPlayers,
+							maxPlayers: game.maxPlayers,
+							name: game.name,
+							description: game.description,
+							cardLogo: game.cardLogo,
+							color: game.color,
+							author: game.author,
+						};
+
+						favoriteGames.push(
+							<LogoCard
+								key={gameInfo.identifier}
+								game={gameInfo}
+							></LogoCard>
+						);
+					}
+				});
+		}
+
+		this.setState({
+			favoriteGames: favoriteGames,
+			currentTab: Tab.FavoriteGames,
+		});
 	}
 }
 

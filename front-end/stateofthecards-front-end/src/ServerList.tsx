@@ -3,11 +3,11 @@ import { Redirect } from "react-router-dom";
 import styles from "./ServerList.module.css";
 import stylesB from "./Base.module.css";
 import ServerListEntry from "./components/ServerListEntry";
-import ILobbyInfo from "./structures/ILobbyInfo";
 import HeaderBar from "./components/HeaderBar";
 import UserSingleton from "./config/UserSingleton";
 import { RoomAvailable } from "colyseus.js";
 import { FullscreenErrorOverlay } from "./components/FullscreenErrorOverlay";
+import FirebaseApp from "./config/Firebase";
 
 enum ServerListState {
 	Idle,
@@ -18,9 +18,12 @@ interface IProps {}
 
 interface IState {
 	currentState: ServerListState;
-	lobby: any;
+	lobby?: any;
 	games: RoomAvailable<any>[];
-	searchQuery: string;
+	filter: object;
+	showFriendsOnly: boolean;
+	friends: string[];
+	showUnlockedOnly: boolean;
 	errorMessage?: string;
 }
 
@@ -30,9 +33,11 @@ class ServerList extends Component<IProps, IState> {
 
 		this.state = {
 			currentState: ServerListState.Idle,
-			lobby: undefined,
 			games: [],
-			searchQuery: "",
+			filter: { roomName: undefined, passwordProtected: undefined },
+			showFriendsOnly: false,
+			friends: [],
+			showUnlockedOnly: false,
 		};
 	}
 
@@ -41,24 +46,8 @@ class ServerList extends Component<IProps, IState> {
 	}
 
 	componentWillUnmount() {
-		//this.state.lobby.removeAllListeners();
+		this.state.lobby?.leave();
 	}
-
-	onSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		this.setState({ searchQuery: event.target.value });
-
-		if (event.target.value !== "") {
-			this.state.lobby.send("filter", {
-				name: "game_room",
-				metadata: { roomName: event.target.value },
-			});
-		} else {
-			this.state.lobby.send("filter", {
-				name: "game_room",
-				metadata: {},
-			});
-		}
-	};
 
 	async joinLobby() {
 		// get the lobby
@@ -69,7 +58,12 @@ class ServerList extends Component<IProps, IState> {
 					?.colyseusClient?.joinOrCreate("lobby_room"),
 			},
 			() => {
-				this.state.lobby.onMessage(
+				this.state.lobby?.send("filter", {
+					name: "game_room",
+					metadata: this.state.filter,
+				});
+
+				this.state.lobby?.onMessage(
 					"rooms",
 					(rooms: RoomAvailable<any>[]) => {
 						this.setState({ games: rooms });
@@ -91,6 +85,21 @@ class ServerList extends Component<IProps, IState> {
 	renderServerList() {
 		let showErrorMessage = this.state.errorMessage ? true : false;
 
+		let gamesFiltered = this.state.games;
+		if (this.state.showFriendsOnly) {
+			this.state.games.filter((value, index) => {
+				for (let i = 0; i < this.state.friends.length; i++) {
+					if (
+						value.metadata.hostFirebaseUID === this.state.friends[i]
+					) {
+						return true;
+					}
+				}
+
+				return false;
+			});
+		}
+
 		return (
 			<div
 				className={
@@ -111,6 +120,7 @@ class ServerList extends Component<IProps, IState> {
 					}}
 					isVisible={showErrorMessage}
 				></FullscreenErrorOverlay>
+
 				<HeaderBar>
 					<div className={stylesB.buttonWrapper}>
 						<button
@@ -144,19 +154,8 @@ class ServerList extends Component<IProps, IState> {
 									" " +
 									stylesB.buttonFilledPrimary
 								}
-							>
-								Filter
-							</button>
-						</div>
-						<div className={stylesB.buttonWrapper}>
-							<button
-								className={
-									stylesB.buttonBase +
-									" " +
-									stylesB.buttonFilledSecondary
-								}
 								onClick={() => {
-									this.state.lobby.send("refreshRoomList");
+									this.state.lobby?.send("refreshRoomList");
 								}}
 							>
 								Refresh
@@ -164,8 +163,29 @@ class ServerList extends Component<IProps, IState> {
 						</div>
 					</div>
 				</HeaderBar>
+
+				<div className={styles.filterWrapper}>
+					<div>
+						<input
+							type="checkbox"
+							checked={this.state.showFriendsOnly}
+							onChange={this.handleFriendsCheckbox}
+						/>
+						<p>Friends only</p>
+					</div>
+
+					<div>
+						<input
+							type="checkbox"
+							checked={this.state.showUnlockedOnly}
+							onChange={this.handlePasswordCheckbox}
+						/>
+						<p>Hide password proteced</p>
+					</div>
+				</div>
+
 				<div className={styles.entries}>
-					{this.state.games.map((value, index) => {
+					{gamesFiltered.map((value, index) => {
 						let iconPath: string;
 
 						if (value.metadata.passwordProtected)
@@ -176,13 +196,15 @@ class ServerList extends Component<IProps, IState> {
 							<ServerListEntry
 								roomId={value.roomId}
 								iconUrl={iconPath}
-								key={value.roomId}
+								key={index}
 								serverName={value.metadata.roomName}
-								gameName="GAME_NAME"
+								gameName={value.metadata.gameName}
 								playerCount={value.clients}
-								maxPlayerCount={value.maxClients}
+								maxPlayerCount={value.metadata.maxClients}
 								onJoinFailed={(e) => {
-									this.setState({ errorMessage: e.message });
+									this.setState({
+										errorMessage: e.message,
+									});
 								}}
 							/>
 						);
@@ -191,6 +213,121 @@ class ServerList extends Component<IProps, IState> {
 			</div>
 		);
 	}
+
+	onSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+		if (event.target.value !== "") {
+			this.setState(
+				{
+					filter: {
+						...this.state.filter,
+						roomName: event.target.value,
+					},
+				},
+				() => {
+					this.state.lobby?.send("filter", {
+						name: "game_room",
+						metadata: { ...this.state.filter },
+					});
+				}
+			);
+		} else {
+			this.setState(
+				{ filter: { ...this.state.filter, roomName: undefined } },
+				() => {
+					this.state.lobby?.send("filter", {
+						name: "game_room",
+						metadata: { ...this.state.filter },
+					});
+				}
+			);
+		}
+	};
+
+	handleFriendsCheckbox = async (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		let friends: string[] = [];
+
+		// This first check is flipped because we haven't changed the state yet
+		if (!this.state.showFriendsOnly) {
+			const userId = UserSingleton.getInstance().getUserInfo()
+				.firebaseUser?.uid;
+
+			await FirebaseApp.database()
+				.ref("users/" + userId + "/friends")
+				.once("value", async (snapshot) => {
+					let tempFriendsCollection: any[] = [];
+					snapshot.forEach((childSnapshot) => {
+						tempFriendsCollection.push(childSnapshot.val());
+					});
+
+					for (let i = 0; i < tempFriendsCollection.length; i++) {
+						await FirebaseApp.database()
+							.ref("friends/" + tempFriendsCollection[i].friendId)
+							.once("value", (snapshot) => {
+								const data = snapshot.val();
+
+								if (data) {
+									if (data.recipientId !== userId) {
+										friends.push(data.recipientId);
+									} else if (data.requestorId !== userId) {
+										friends.push(data.requestorId);
+									}
+								}
+							});
+					}
+
+					this.setState({
+						showFriendsOnly: !this.state.showFriendsOnly,
+						friends: friends,
+					});
+				});
+		} else {
+			this.setState({
+				showFriendsOnly: !this.state.showFriendsOnly,
+				friends: [],
+			});
+		}
+	};
+
+	handlePasswordCheckbox = (event: React.ChangeEvent<HTMLInputElement>) => {
+		this.setState(
+			{ showUnlockedOnly: !this.state.showUnlockedOnly },
+			() => {
+				if (this.state.showUnlockedOnly) {
+					this.setState(
+						{
+							filter: {
+								...this.state.filter,
+								passwordProtected: false,
+							},
+						},
+						() => {
+							this.state.lobby?.send("filter", {
+								name: "game_room",
+								metadata: { ...this.state.filter },
+							});
+						}
+					);
+				} else {
+					this.setState(
+						{
+							filter: {
+								...this.state.filter,
+								passwordProtected: undefined,
+							},
+						},
+						() => {
+							this.state.lobby?.send("filter", {
+								name: "game_room",
+								metadata: { ...this.state.filter },
+							});
+						}
+					);
+				}
+			}
+		);
+	};
 }
 
 export default ServerList;

@@ -7,47 +7,72 @@
 }
 
 .sidePanel {
+	background-color: #525252;
 	overflow-y: auto;
 	overflow-x: none;
 	display: flex;
 	flex-direction: column;
-}
-
-.sidePanel:nth-child(1) {
-	background-color: #525252;
-}
-
-.sidePanel:nth-child(2) {
-	background-color: #5c5c5c;
-}
-
-/*------------------------------------------------Search list------------------------------------------------*/
-.searchList {
 	padding: 1vw;
 }
 
-.searchList > .filterButtons {
+.sidePanel {
+	width: 25vw;
+}
+
+@media only screen and (max-width: 1500px) {
+	.sidePanel {
+		width: 30vw;
+	}
+}
+
+@media only screen and (max-width: 1000px) {
+	.sidePanel {
+		width: 50vw;
+	}
+}
+
+@media only screen and (max-width: 700px) {
+	.sidePanel {
+		width: 80vw;
+	}
+}
+
+@media only screen and (max-width: 500px) {
+	.sidePanel {
+		width: 100vw;
+	}
+}
+
+/*------------------------------------------------Game settings: Collapsable content------------------------------------------------*/
+.settings {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.settings > * {
+	margin-top: 10px;
+	width: 100%;
+}
+
+.settings > .filterButtons {
 	display: flex;
 	flex-direction: column;
 	margin-top: 10px;
 }
 
-.searchList > .filterButtons > div > button {
+.settings > .filterButtons > div > button {
 	margin: 5px 0;
 	width: 100%;
+	border-radius: 6px;
 }
 
-.searchList > .filterButtons > div:nth-child(1) > button {
+.settings > .filterButtons > div:first-child > button {
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
 }
 
-.searchList > .filterButtons > div:nth-child(2) > button,
-.searchList > .filterButtons > div:nth-child(3) > button {
-	border-radius: 0;
-}
-
-.searchList > .filterButtons > div:nth-child(4) > button {
+.settings > .filterButtons > div:last-child > button {
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
 }
@@ -61,101 +86,4 @@
 	flex-direction: row;
 	overflow-y: auto;
 	justify-content: center;
-}
-
-/*------------------------------------------------Game settings------------------------------------------------*/
-.gameSettings {
-	width: 25vw;
-}
-
-@media only screen and (max-width: 1500px) {
-	.gameSettings {
-		width: 30vw;
-	}
-}
-
-@media only screen and (max-width: 1000px) {
-	.gameSettings {
-		width: 50vw;
-	}
-}
-
-@media only screen and (max-width: 700px) {
-	.gameSettings {
-		width: 80vw;
-	}
-}
-
-@media only screen and (max-width: 500px) {
-	.gameSettings {
-		width: 100vw;
-	}
-}
-
-/*------------------------------------------------Game settings: Collapsable content------------------------------------------------*/
-.collapsibleHeader {
-	color: #ffffff;
-	padding: 10px;
-	user-select: none;
-	-moz-user-select: none;
-	-webkit-user-select: none;
-}
-
-.collapsibleHeader:hover {
-	cursor: pointer;
-	background-color: #5c5c5c;
-}
-
-.collapsibleContent {
-	padding: 10px 10px 10px 10px;
-}
-
-.collapsibleContent > div {
-	padding: 5px;
-	background-color: #5c5c5c;
-}
-
-/*------------------------------------------------Game settings: Settings general------------------------------------------------*/
-.settings {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-}
-
-.settings > * {
-	margin-top: 10px;
-}
-
-/*------------------------------------------------Game settings: Server settings------------------------------------------------*/
-.serverSettings > * {
-	width: 60%;
-}
-
-.serverSettings > .friendsOnlySetting {
-	color: #ffffff;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-}
-
-/*------------------------------------------------Game settings: Match settings------------------------------------------------*/
-.cardPreview {
-	width: 8vw;
-	height: 14vw;
-	box-shadow: none;
-}
-
-.cardPreview > img {
-	width: 100%;
-	height: 100%;
-}
-
-.playerCountSetting {
-	color: #ffffff;
-	display: flex;
-	flex-direction: column;
-}
-
-.playerCountSetting > input {
-	margin: 0 4px;
 }

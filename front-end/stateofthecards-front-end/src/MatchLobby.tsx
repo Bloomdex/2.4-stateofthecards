@@ -12,15 +12,19 @@ import TabSelection from "./components/TabSelection";
 import { Room } from "colyseus.js";
 import UserSingleton from "./config/UserSingleton";
 import { FullscreenErrorOverlay } from "./components/FullscreenErrorOverlay";
+import GameScreen from "./GameScreen";
+import { RootState } from "stateofthecards-gamelib";
 
 interface IProps {}
 
 enum MatchLobbyState {
 	Idle,
+	Playing,
+	Finished,
 	RedirectServerList,
 }
 
-enum Tabs {
+enum Tab {
 	Overview,
 	Invite,
 	Settings,
@@ -29,16 +33,24 @@ enum Tabs {
 interface IState {
 	currentState?: MatchLobbyState;
 	lobbyInfo?: ILobbyInfo;
-	currentTab?: Tabs;
+	currentTab?: Tab;
+	isHost: boolean;
 	errorMessage?: string;
+	gameState?: RootState;
 }
 
 class MatchLobby extends React.Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
+
+		this.state = {
+			currentState: MatchLobbyState.Idle,
+			currentTab: Tab.Overview,
+			isHost: false,
+		};
 	}
 
-	componentWillMount() {
+	componentDidMount() {
 		const search = window.location.search;
 		const params = new URLSearchParams(search);
 		const lobbyId = params.get("id");
@@ -55,47 +67,80 @@ class MatchLobby extends React.Component<IProps, IState> {
 					},
 				})
 				.then((room: Room<any>) => {
-					UserSingleton.getInstance().setUserInfo({
-						currentRoom: room,
-					});
-
-					room.onStateChange(() => {
-						this.forceUpdate();
-					});
+					this.setRoomListeners(room);
 				})
 				.catch((e) => {
 					this.setState({ errorMessage: "Info: " + e.message });
 				});
+		} else if (!lobbyId) {
+			this.setState({ errorMessage: "Info: Failed to find match!" });
 		}
 
 		this.setState({
 			currentState: MatchLobbyState.Idle,
-			currentTab: Tabs.Overview,
+			currentTab: Tab.Overview,
+			isHost: true,
 		});
+
+		let currentRoom = UserSingleton.getInstance().getUserInfo().currentRoom;
+		if (currentRoom) this.setRoomListeners(currentRoom);
 	}
 
-	componentDidMount() {
-		// Rerender has to be forced since react somehow does not
-		//  notice the state of the room has updated.
-		UserSingleton.getInstance()
-			.getUserInfo()
-			.currentRoom?.onStateChange(() => {
-				this.forceUpdate();
+	setRoomListeners(room: Room<any>) {
+		UserSingleton.getInstance().setUserInfo({
+			currentRoom: room,
+		});
+
+		room.onStateChange(() => {
+			this.setState({
+				isHost: UserSingleton.getInstance().checkIsRoomHost(),
 			});
+			this.forceUpdate();
+		});
+
+		room.onMessage("kick", (message) => {
+			this.setState({
+				errorMessage: "Info: " + message.message,
+			});
+		});
+
+		room.onMessage("startMatch", (message) => {
+			this.setState({
+				currentState: MatchLobbyState.Playing,
+				gameState: message.gameState,
+			});
+		});
+
+		room.onMessage("newState", (message) => {
+			this.setState({
+				gameState: message,
+			});
+		});
+
+		room.onMessage("updateGameInfo", (message) => {
+			const lobbyInfo = this.state.lobbyInfo;
+			if (lobbyInfo != null) {
+				lobbyInfo.gameInfo = message;
+			}
+		});
 	}
 
 	switchTab(index: number) {
 		if (index === 0) {
-			this.setState({ currentTab: Tabs.Overview });
+			this.setState({ currentTab: Tab.Overview });
 		} else if (index === 1) {
-			this.setState({ currentTab: Tabs.Invite });
+			this.setState({ currentTab: Tab.Invite });
 		} else if (index === 2) {
-			this.setState({ currentTab: Tabs.Settings });
+			this.setState({ currentTab: Tab.Settings });
 		}
 	}
 
 	render() {
 		switch (this.state.currentState) {
+			case MatchLobbyState.Playing:
+				return (
+					<GameScreen gameState={this.state.gameState!}></GameScreen>
+				);
 			case MatchLobbyState.Idle:
 				return this.renderLobby();
 			case MatchLobbyState.RedirectServerList:
@@ -118,6 +163,7 @@ class MatchLobby extends React.Component<IProps, IState> {
 					}}
 					isVisible={showErrorMessage}
 				></FullscreenErrorOverlay>
+
 				<HeaderBar>
 					<div className={stylesB.buttonWrapper}>
 						<button
@@ -151,7 +197,11 @@ class MatchLobby extends React.Component<IProps, IState> {
 
 					<TabSelection
 						onButtonClicked={(i) => this.switchTab(i)}
-						buttons={["Overview", "Invite", "Settings"]}
+						buttons={
+							this.state.isHost
+								? ["Overview", "Invite", "Settings"]
+								: ["Overview", "Invite"]
+						}
 						cssClass={styles.navButtons}
 						cssButtonWrapperClass={stylesB.buttonWrapper}
 						cssButtonActiveClass={
@@ -175,12 +225,18 @@ class MatchLobby extends React.Component<IProps, IState> {
 	}
 
 	renderTab() {
+		const room = UserSingleton.getInstance().getUserInfo().currentRoom;
+
 		switch (this.state.currentTab) {
-			case Tabs.Overview:
-				return <MatchLobbyOverview />;
-			case Tabs.Invite:
+			case Tab.Overview:
+				if (room) {
+					return <MatchLobbyOverview room={room} />;
+				} else {
+					return <div />;
+				}
+			case Tab.Invite:
 				return <MatchLobbyPlayers />;
-			case Tabs.Settings:
+			case Tab.Settings:
 				return <MatchLobbySettings />;
 		}
 	}

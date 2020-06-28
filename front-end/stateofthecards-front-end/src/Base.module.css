@@ -20,6 +20,10 @@
 	background-color: #404040;
 }
 
+.backgroundLightDark {
+	background-color: #4d4d4d;
+}
+
 .error {
 	color: #e65c53;
 	font-weight: bold;
@@ -115,6 +119,16 @@
 	transform: translateY(4px);
 }
 
+.buttonFilledDisabled {
+	color: #404040;
+	background-color: #696969;
+	box-shadow: 0 5px #525252;
+	transition: transform 0.05s;
+}
+.buttonFilledDisabled:hover {
+	cursor: default;
+}
+
 /*------------------------------------------------Input------------------------------------------------*/
 .input {
 	width: 100%;
@@ -126,4 +140,27 @@
 	border-radius: 6px;
 	border: none;
 	padding: 1vh 1vw;
+}
+
+/*------------------------------------------------Collapsible header------------------------------------------------*/
+.collapsibleHeader {
+	color: #ffffff;
+	padding: 10px;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+
+.collapsibleHeader:hover {
+	cursor: pointer;
+	background-color: #5c5c5c;
+}
+
+.collapsibleContent {
+	padding: 10px 10px 10px 10px;
+}
+
+.collapsibleContent > div {
+	padding: 5px;
+	background-color: #5c5c5c;
 }

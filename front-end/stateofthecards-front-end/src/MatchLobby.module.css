@@ -22,16 +22,34 @@
 	flex-direction: row;
 }
 
-.navButtons > div:nth-child(1) > button {
+.navButtons > div > button {
+	border-radius: 0;
+}
+
+.navButtons > div:first-child > button {
+	border-radius: 6px;
 	border-top-right-radius: 0;
 	border-bottom-right-radius: 0;
 }
 
-.navButtons > div:nth-child(2) > button {
-	border-radius: 0;
-}
-
-.navButtons > div:nth-child(3) > button {
+.navButtons > div:last-child > button {
+	border-radius: 6px;
 	border-top-left-radius: 0;
 	border-bottom-left-radius: 0;
 }
+
+/*
+.navbuttons > div:first-child > button {
+	border-top-right-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.navButtons > div > button {
+	border-radius: 0;
+}
+
+.navButtons > div:last-child > button {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+}
+*/

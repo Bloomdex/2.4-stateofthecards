@@ -1,6 +1,5 @@
-import firebase from "firebase";
 import IUserInfo from "../structures/IUserInfo";
-import { Room } from "colyseus.js";
+import FirebaseApp from "./Firebase";
 
 export default class UserSingleton {
 	private static _instance: UserSingleton;
@@ -34,5 +33,49 @@ export default class UserSingleton {
 
 	setUserInfo(info: IUserInfo) {
 		this._userInfo = { ...this._userInfo, ...info };
+	}
+
+	checkIsRoomHost(): boolean {
+		return (
+			this._userInfo.currentRoom?.state.hostPlayer ===
+			this._userInfo.currentRoom?.sessionId
+		);
+	}
+
+	async getFriendship(toCheckUid: string): Promise<any> {
+		/*
+			returns undefined if there is no friendship.
+			returns an object with the status if there is a friendship.
+		*/
+		const callerUid = this._userInfo.firebaseUser?.uid;
+
+		const refOne = FirebaseApp.database().ref(
+			"friends/" + callerUid + toCheckUid
+		);
+		const refTwo = FirebaseApp.database().ref(
+			"friends/" + toCheckUid + callerUid
+		);
+
+		let friendshipStatus;
+
+		await refOne.once("value", (snapshot) => {
+			if (snapshot.exists()) {
+				friendshipStatus = {
+					key: callerUid + toCheckUid,
+					...snapshot.val(),
+				};
+			}
+		});
+
+		await refTwo.once("value", (snapshot) => {
+			if (snapshot.exists()) {
+				friendshipStatus = {
+					key: toCheckUid + callerUid,
+					...snapshot.val(),
+				};
+			}
+		});
+
+		return await friendshipStatus;
 	}
 }

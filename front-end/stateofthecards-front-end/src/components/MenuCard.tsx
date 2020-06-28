@@ -10,7 +10,6 @@ interface IProps {
 }
 
 interface IState {
-	children: React.ReactElement[];
 	isFlipped: boolean;
 	frontChild: React.ReactElement;
 	backChild: React.ReactElement;
@@ -23,7 +22,6 @@ class MenuCard extends Component<IProps, IState> {
 		super(props);
 
 		this.state = {
-			children: props.children,
 			isFlipped: false,
 			frontChild: props.children[props.currentChild],
 			backChild:
@@ -47,12 +45,12 @@ class MenuCard extends Component<IProps, IState> {
 		if (currentSide) {
 			// Switch to back.
 			this.setState({
-				frontChild: this.state.children[index],
+				frontChild: this.props.children[index],
 			});
 		} else {
 			// Switch to front.
 			this.setState({
-				backChild: this.state.children[index],
+				backChild: this.props.children[index],
 			});
 		}
 
@@ -62,7 +60,7 @@ class MenuCard extends Component<IProps, IState> {
 
 	setNextChild() {
 		let newIndex =
-			(this.state.currentIndex + 1) % this.state.children.length;
+			(this.state.currentIndex + 1) % this.props.children.length;
 
 		this.setCurrentChild(newIndex);
 	}

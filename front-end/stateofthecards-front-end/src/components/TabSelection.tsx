@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-//import styles from "./tabSelection.module.css";
 
 interface IProps {
 	onButtonClicked: (index: number) => void;
@@ -11,7 +10,6 @@ interface IProps {
 }
 
 interface IState {
-	buttons: string[];
 	activeButton: number;
 }
 
@@ -20,7 +18,6 @@ class MenuCard extends Component<IProps, IState> {
 		super(props);
 
 		this.state = {
-			buttons: props.buttons,
 			activeButton: 0,
 		};
 	}
@@ -34,16 +31,17 @@ class MenuCard extends Component<IProps, IState> {
 	render() {
 		let buttons: React.ReactElement[] = [];
 
-		this.state.buttons.forEach((button, i) => {
+		this.props.buttons.forEach((button, i) => {
 			let buttonClass = this.props.cssButtonInactiveClass;
 
-			if (i == this.state.activeButton) {
+			if (i === this.state.activeButton) {
 				buttonClass = this.props.cssButtonActiveClass;
 			}
 
 			buttons.push(
-				<div className={this.props.cssButtonWrapperClass}>
+				<div key={button} className={this.props.cssButtonWrapperClass}>
 					<button
+						key={button}
 						className={buttonClass}
 						onClick={() => this.setButtonActive(i)}
 					>

@@ -1,4 +1,4 @@
-import React, { Component, RefObject, createRef, FormEvent } from "react";
+import React, { Component, RefObject, createRef } from "react";
 import styles from "./Login.module.css";
 import stylesB from "./Base.module.css";
 import { Redirect } from "react-router-dom";
@@ -47,10 +47,7 @@ class Login extends Component<IProps, IState> {
 			// Instead of logging and waiting
 			//  Login to the back-end
 			FirebaseApp.auth()
-				.signInWithEmailAndPassword(
-					userinfo.email,
-					userinfo.password
-				)
+				.signInWithEmailAndPassword(userinfo.email, userinfo.password)
 				.catch((error) => {
 					// Flip the card back-around
 					this.menuCard.current?.setCurrentChild(0);

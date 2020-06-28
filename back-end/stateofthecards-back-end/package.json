@@ -28,6 +28,7 @@
 		"cors": "^2.8.5",
 		"express": "^4.16.4",
 		"express-jwt": "^5.3.1",
-		"gamelib": "Bloomdex/2.4-gamelib"
+		"firebase": "^7.15.4",
+		"stateofthecards-gamelib": "file:../../2.4-gamelib"
 	}
 }

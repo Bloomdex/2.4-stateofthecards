@@ -54,10 +54,39 @@
 	-ms-user-select: none;
 }
 
+.icon {
+	margin-left: 10px;
+}
+.icon:hover {
+	filter: brightness(1.2);
+}
+.icon:active {
+	filter: brightness(0.8);
+}
+
 img {
-	width: 22px;
+	width: 3vh;
 }
 
 p {
 	margin: 0px;
+	font-weight: bold;
+}
+
+@media only screen and (max-height: 750px) {
+	img {
+		width: 4vh;
+	}
+}
+
+@media only screen and (max-height: 600px) {
+	img {
+		width: 5vh;
+	}
+}
+
+@media only screen and (max-height: 350px) {
+	img {
+		width: 8vh;
+	}
 }

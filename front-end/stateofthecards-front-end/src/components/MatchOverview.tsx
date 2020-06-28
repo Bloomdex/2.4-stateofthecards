@@ -1,123 +1,148 @@
 import React, { Component } from "react";
 import styles from "./MatchOverview.module.css";
 import stylesB from "../Base.module.css";
-import MenuCard from "./MenuCard";
-import IGameInfo from "../structures/IGameInfo";
 import MatchPlayerListEntry from "./MatchPlayerListEntry";
 import UserSingleton from "../config/UserSingleton";
+import LogoCard from "./LogoCard";
+import { Room } from "colyseus.js";
 
-interface IProps {}
+interface Player {
+	sessionId: string;
+	firebaseUid: string;
+	playerName: string;
+}
 
-interface IState {}
+interface IProps {
+	room?: Room<any>;
+}
+
+interface IState {
+	players: Player[];
+}
 
 class MatchOverview extends Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
+		this.state = { players: [] };
+	}
+
+	componentDidMount() {
+		if (this.props.room != null) {
+			this.setRoomListeners();
+			this.createPlayers();
+		}
+	}
+
+	componentWillUnmount() {
+		this.setState({ players: [] });
+	}
+
+	setRoomListeners() {
+		this.props.room?.onStateChange(() => {
+			this.createPlayers();
+		});
+	}
+
+	createPlayers() {
+		const players: Player[] = [];
+
+		for (let key in this.props.room?.state.players) {
+			let player = this.props.room?.state.players[key];
+
+			players.push({
+				sessionId: key,
+				firebaseUid: player.firebaseUID,
+				playerName: player.username,
+			});
+		}
+
+		this.setState({ players: players });
 	}
 
 	render() {
-		const testGame: IGameInfo = {
-			minPlayers: 2,
-			maxPlayers: 6,
-			name: "Blackjack",
-			description:
-				"Blackjack, formerly also Black Jack and Vingt-Un, is the American member of a global family of banking games known as Twenty-One, whose relatives include Pontoon and Vingt-et-Un. It is a comparing card game between one or more players and a dealer, where each player in turn competes against the dealer.",
-			cardLogo: new URL(
-				"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-			),
-			color: "#FFFFFF",
-		};
+		const roomState = UserSingleton.getInstance().getUserInfo().currentRoom
+			?.state;
 
-		const statePlayers = UserSingleton.getInstance().getUserInfo()
-			.currentRoom?.state.players;
-
-		let isHost = false;
-
-		if (
-			UserSingleton.getInstance().getUserInfo().currentRoom?.state
-				.hostPlayer ===
-			UserSingleton.getInstance().getUserInfo().currentRoom?.sessionId
-		) {
-			isHost = true;
+		if (roomState) {
+			return this.renderOverview(roomState);
+		} else {
+			return <div className={styles.wrapper} />;
 		}
+	}
 
-		const playerMap: JSX.Element[] = [];
-		for (let key in statePlayers) {
-			let player = statePlayers[key];
-			let iconUrl = "icons/full-match-icon.svg";
-			let actionLabel = "";
+	renderOverview(roomState: any) {
+		const isHost = UserSingleton.getInstance().checkIsRoomHost();
 
-			if (
-				UserSingleton.getInstance().getUserInfo().currentRoom?.state
-					.hostPlayer === key
-			) {
-				iconUrl = "icons/crown-icon.svg";
-				actionLabel = "";
+		const hasEnoughPlayers =
+			Object.keys(roomState.players).length >=
+			roomState.gameInfo.minPlayers;
 
-				if (!isHost) {
-					actionLabel = "(Double click to add as friend.)";
-				}
-			} else if (isHost) {
-				actionLabel = "(Double click to kick.)";
-			} else if (!isHost) {
-				if (
-					key !==
-					UserSingleton.getInstance().getUserInfo().currentRoom
-						?.sessionId
-				) {
-					actionLabel = "(Double click to add as friend.)";
-				}
-			}
+		const startMatchButtonStyle = hasEnoughPlayers
+			? [stylesB.buttonBase, stylesB.buttonFilledPrimary].join(" ")
+			: [stylesB.buttonBase, stylesB.buttonFilledDisabled].join(" ");
 
-			playerMap.push(
-				<MatchPlayerListEntry
-					key={key}
-					playerName={player.username}
-					iconUrl={iconUrl}
-					actionLabel={actionLabel}
-				></MatchPlayerListEntry>
-			);
-		}
+		const startMatchError = hasEnoughPlayers ? "" : "Not enough players!";
 
 		return (
 			<div className={styles.wrapper}>
 				<div className={styles.overviewWrapper}>
-					<div className={styles.playerWrapper}>{playerMap}</div>
+					<div className={styles.playerWrapper}>
+						{this.state.players.map((player, index) => (
+							<MatchPlayerListEntry
+								key={index}
+								sessionId={player.sessionId}
+								firebaseUid={player.firebaseUid}
+								playerName={player.playerName}
+							/>
+						))}
+					</div>
 
 					<div className={styles.infoWrapper}>
-						<MenuCard
-							cssClass={styles.cardPreview}
-							currentChild={0}
-						>
-							<img src={testGame.cardLogo.toString()}></img>
-							<div />
-						</MenuCard>
+						<LogoCard game={roomState.gameInfo}></LogoCard>
 
-						<p>Max player count: {testGame.maxPlayers}</p>
+						<p>Min player count: {roomState.gameInfo.minPlayers}</p>
+						<p>Max player count: {roomState.gameInfo.maxPlayers}</p>
+
+						<p className={styles.gameDescription}>
+							Description: {roomState.gameInfo.description}
+						</p>
 					</div>
 				</div>
 
-				<div
-					className={
-						stylesB.buttonWrapper +
-						" " +
-						stylesB.backgroundDark +
-						" " +
-						styles.hostActions
-					}
-				>
-					<button
+				{isHost && (
+					<div
 						className={
-							stylesB.buttonBase +
+							stylesB.buttonWrapper +
 							" " +
-							stylesB.buttonFilledPrimary
+							stylesB.backgroundDark +
+							" " +
+							styles.hostActions
 						}
 					>
-						Start match (2/{testGame.maxPlayers})
-					</button>
-				</div>
+						<button
+							className={startMatchButtonStyle}
+							disabled={!hasEnoughPlayers}
+							onClick={() => {
+								this.startMatchAction();
+							}}
+						>
+							Start match ({Object.keys(roomState.players).length}
+							/{roomState.gameInfo.maxPlayers})
+						</button>
+						<p className={styles.startMatchError}>
+							{startMatchError}
+						</p>
+					</div>
+				)}
 			</div>
 		);
+	}
+
+	startMatchAction() {
+		// Ask the server to start the match.
+		UserSingleton.getInstance()
+			?.getUserInfo()
+			?.currentRoom?.send("startMatch");
 	}
 }
 

@@ -11,7 +11,7 @@ import { Redirect } from "react-router-dom";
 import HeaderBar from "./components/HeaderBar";
 import FirebaseApp from "./config/Firebase";
 import UserSingleton from "./config/UserSingleton";
-import { Room, DataChange, RoomAvailable } from "colyseus.js";
+import { Room } from "colyseus.js";
 
 enum DashBoardState {
 	Idle,
@@ -66,10 +66,10 @@ class Dashboard extends Component<IProps, IState> {
 						}
 					></Redirect>
 				);
-				break;
 			case DashBoardState.RedirectQuickJoin:
-				return <Redirect to={"/tempGamePage"}></Redirect>;
 				break;
+			case DashBoardState.RedirectCreateGame:
+				return <Redirect to="/create"></Redirect>;
 			case DashBoardState.Logout:
 				// Logout using Firebase
 				FirebaseApp.auth().signOut();
@@ -104,21 +104,6 @@ class Dashboard extends Component<IProps, IState> {
 						>
 							Logout
 						</button>
-						<button
-							className={
-								stylesB.buttonBase +
-								" " +
-								stylesB.buttonFilledTertiary
-							}
-							onClick={() => {
-								this.setState({
-									currentState:
-										DashBoardState.RedirectQuickJoin,
-								});
-							}}
-						>
-							SPELLLLLETJE
-						</button>
 					</div>
 					<div className={styles.infoWrapper}>
 						<p className={stylesH.headerTextLarge}>
@@ -133,7 +118,7 @@ class Dashboard extends Component<IProps, IState> {
 							!
 						</p>
 					</div>
-					<div className={stylesB.buttonWrapper}></div>
+					<div />
 				</HeaderBar>
 
 				<div className={styles.optionsWrapper}>
@@ -210,6 +195,8 @@ class Dashboard extends Component<IProps, IState> {
 								<div
 									className={styles.cardContent}
 									onClick={() => {
+										this.createMatchCard.current?.setNextChild();
+
 										UserSingleton.getInstance()
 											.getUserInfo()
 											.colyseusClient?.create(
@@ -246,7 +233,9 @@ class Dashboard extends Component<IProps, IState> {
 									></img>
 									<p>Create Match</p>
 								</div>
-								<div></div>
+								<div>
+									<ScaleLoader radius={2} color={"#33658a"} />
+								</div>
 							</MenuCard>
 						</div>
 
@@ -312,15 +301,38 @@ class Dashboard extends Component<IProps, IState> {
 															passwordProtected: false,
 															players: players,
 															gameInfo: {
-																minPlayers: 2,
-																maxPlayers: 6,
+																identifier:
+																	room.state
+																		.gameInfo
+																		.identifier,
+																minPlayers:
+																	room.state
+																		.gameInfo
+																		.minPlayers,
+																maxPlayers:
+																	room.state
+																		.gameInfo
+																		.maxPlayers,
 																name:
-																	"Jacksnack",
-																description: "",
-																cardLogo: new URL(
-																	"https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Jack_of_clubs_fr.svg/200px-Jack_of_clubs_fr.svg.png"
-																),
-																color: "",
+																	room.state
+																		.gameInfo
+																		.name,
+																description:
+																	room.state
+																		.gameInfo
+																		.description,
+																cardLogo:
+																	room.state
+																		.gameInfo
+																		.cardLogo,
+																color:
+																	room.state
+																		.gameInfo
+																		.color,
+																author:
+																	room.state
+																		.gameInfo
+																		.author,
 															},
 														}
 													);
@@ -364,7 +376,15 @@ class Dashboard extends Component<IProps, IState> {
 								currentChild={0}
 								ref={this.createGameCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										this.setState({
+											currentState:
+												DashBoardState.RedirectCreateGame,
+										});
+									}}
+								>
 									<img
 										src="icons/create-game-icon.svg"
 										alt=""

@@ -99,23 +99,43 @@ export class ExtendedLobbyRoom extends Room {
 		room: RoomListingData,
 		filter?: LobbyOptions["filter"]
 	) {
+		if (room.locked) {
+			return false;
+		}
+
 		if (!filter) {
 			return true;
 		}
 
-		let isAllowed = true;
-
 		if (filter.name !== room.name) {
-			isAllowed = false;
+			return false;
 		}
+
+		let isAllowed = true;
 
 		if (filter.metadata) {
 			for (const field in filter.metadata) {
-				if (field === "roomName") {
-					let item = room.metadata[field].toLocaleLowerCase();
-					let query = filter.metadata[field].toLocaleLowerCase();
+				if (filter.metadata[field] === undefined) {
+					continue;
+				}
 
-					isAllowed = item.includes(query);
+				if (field === "roomName") {
+					const item = room.metadata[field].toLocaleLowerCase();
+					const query = filter.metadata[field].toLocaleLowerCase();
+
+					if (!item.includes(query)) {
+						isAllowed = false;
+						break;
+					}
+				} else if (field === "passwordProtected") {
+					const roomIsProtected = room.metadata[field];
+					const query = filter.metadata[field];
+
+					// Query is false if we dont want to show password protected rooms
+					if (roomIsProtected !== query) {
+						isAllowed = false;
+						break;
+					}
 				} else if (room.metadata[field] !== filter.metadata[field]) {
 					isAllowed = false;
 					break;

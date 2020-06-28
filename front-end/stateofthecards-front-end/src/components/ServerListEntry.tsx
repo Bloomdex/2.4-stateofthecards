@@ -1,7 +1,6 @@
 import React from "react";
 import stylesLE from "./BasicListEntry.module.css";
 import styles from "./ServerListEntry.module.css";
-import ILobbyInfo from "../structures/ILobbyInfo";
 import UserSingleton from "../config/UserSingleton";
 import { Room } from "colyseus.js";
 import { Redirect } from "react-router-dom";
@@ -48,7 +47,6 @@ class ServerListEntry extends React.Component<IProps, IState> {
 						}
 					></Redirect>
 				);
-				break;
 		}
 	}
 
