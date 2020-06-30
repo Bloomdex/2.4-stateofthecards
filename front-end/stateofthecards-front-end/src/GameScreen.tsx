@@ -4,6 +4,8 @@ import stylesB from "./Base.module.css";
 import UserSingleton from "./config/UserSingleton";
 import { validActions, RootState } from "stateofthecards-gamelib";
 import PlayArea from "./components/PlayArea";
+import MatchPlayerListEntry from "./components/MatchPlayerListEntry";
+import { Redirect } from "react-router-dom";
 
 const GameScreen: FunctionComponent<{ gameState: RootState }> = ({
 	gameState,
@@ -11,6 +13,7 @@ const GameScreen: FunctionComponent<{ gameState: RootState }> = ({
 	const room = UserSingleton.getInstance().getUserInfo().currentRoom;
 
 	const [showSidePanel, setShowSidePanel] = useState(false);
+	const [redirectDashboard, setRedirectDashboard] = useState(false);
 
 	const hiddenStyle = showSidePanel
 		? styles.sidePanelOpen
@@ -19,73 +22,25 @@ const GameScreen: FunctionComponent<{ gameState: RootState }> = ({
 	const playerList: any[] = [];
 
 	for (let key in room?.state.players) {
-		playerList.push(<p key={key}>{room?.state.players[key].username}</p>);
+		playerList.push(
+			<MatchPlayerListEntry
+				key={key}
+				sessionId={key}
+				firebaseUid={room?.state.players[key].firebaseUID}
+				playerName={room?.state.players[key].username}
+				disableKick={true}
+			/>
+		);
 	}
 
-	const validActionsList = gameState != null ? validActions(gameState) : [];
-
-	// If it is this clients turn.
-	const isMyTurn =
-		room?.state.playerIndices[room?.sessionId] ===
-		gameState.turnInfo.current;
-
-	const myTurnMessage = isMyTurn ? <h1>YOUR TURN!!!!!!!!!!!!!!!!!!</h1> : "";
+	if (redirectDashboard) return <Redirect to="/dashboard" />;
 
 	return (
 		<div className={stylesB.wrapper + " " + stylesB.background}>
 			<div className={stylesB.wrapper + " " + styles.gameScreen}>
-				<div className={styles.playArea}>
-					<PlayArea gameState={gameState} />
-				</div>
-
-				<div className={styles.actionPanel}>
-					{myTurnMessage}
-					possible actions:
-					<ul>
-						{validActionsList.map((action: any, index) => {
-							const displayValue = {
-								type: action.type,
-								tags: [],
-								options: {},
-								effects: [],
-							};
-
-							if (action.payload) {
-								displayValue.tags = action.payload.tags;
-
-								if (action.payload.effects) {
-									displayValue.effects =
-										action.payload.effects;
-								}
-							}
-
-							if (action.options) {
-								displayValue.options = action.options;
-							}
-
-							return (
-								<li key={index}>
-									<button
-										onClick={() => {
-											room?.send("performAction", action);
-										}}
-									>
-										send
-									</button>
-									<pre>
-										{JSON.stringify(displayValue, null, 2)}
-									</pre>
-								</li>
-							);
-						})}
-					</ul>
-					<label>
-						players:{" "}
-						{JSON.stringify(room?.state.playerIndices, null, 2)}
-					</label>
-					<label>currentPlayer: {gameState.turnInfo.current}</label>
-				</div>
+				<PlayArea gameState={gameState} />
 			</div>
+
 			<div
 				className={[
 					stylesB.wrapper,
@@ -93,35 +48,46 @@ const GameScreen: FunctionComponent<{ gameState: RootState }> = ({
 					hiddenStyle,
 				].join(" ")}
 			>
-				<h1 className={styles.serverName}>
-					{
-						UserSingleton.getInstance()?.getUserInfo()?.currentRoom
-							?.state.roomName
-					}
-				</h1>
-				<h2 className={styles.serverName}>
-					{
-						UserSingleton.getInstance()?.getUserInfo()?.currentRoom
-							?.state.gameInfo.name
-					}
-				</h2>
-				<div>
+				<div className={styles.serverInfo}>
+					<h1>
+						{
+							UserSingleton.getInstance()?.getUserInfo()
+								?.currentRoom?.state.roomName
+						}
+					</h1>
+					<h2>
+						{
+							UserSingleton.getInstance()?.getUserInfo()
+								?.currentRoom?.state.gameInfo.name
+						}
+					</h2>
+				</div>
+
+				<div className={styles.playerList}>
 					<h1>Players</h1>
 					<div>{playerList}</div>
 				</div>
+
 				<div className={stylesB.buttonWrapper}>
 					<button
 						className={
 							stylesB.buttonBase +
 							" " +
-							stylesB.buttonFilledTertiary
+							stylesB.buttonFilledWarning
 						}
-						onClick={() => {}}
+						onClick={() => {
+							UserSingleton.getInstance()
+								?.getUserInfo()
+								?.currentRoom?.leave();
+
+							setRedirectDashboard(true);
+						}}
 					>
-						Leave game
+						Forfeit & Leave
 					</button>
 				</div>
 			</div>
+
 			<div className={styles.floatingButtonWrapper}>
 				<button
 					className={

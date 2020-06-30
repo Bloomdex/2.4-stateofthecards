@@ -38,18 +38,29 @@
 	border-bottom-left-radius: 0;
 }
 
-/*
-.navbuttons > div:first-child > button {
-	border-top-right-radius: 0;
-	border-bottom-right-radius: 0;
+/*------------------------------------------------End screen------------------------------------------------*/
+
+.endScreenWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	color: #000000;
 }
 
-.navButtons > div > button {
-	border-radius: 0;
+.endScreenContent {
+	background-color: whitesmoke;
+	padding: 30px;
+	border-radius: 10px;
+	-webkit-box-shadow: -2px 2px 13px -5px rgba(0, 0, 0, 0.75);
+	-moz-box-shadow: -2px 2px 13px -5px rgba(0, 0, 0, 0.75);
+	box-shadow: -2px 2px 13px -5px rgba(0, 0, 0, 0.75);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 }
 
-.navButtons > div:last-child > button {
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
+.endScreenContent > img {
+	width: 100px;
+	margin-bottom: 30px;
 }
-*/

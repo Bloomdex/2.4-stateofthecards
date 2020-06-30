@@ -151,8 +151,7 @@ export class GameRoom extends Room<State> {
 			) {
 				this.matchStarting = true;
 				this.startMatch()
-
-					.catch((error) => client.error(8997, error))
+					.catch((error) => client.error(8997, error.message))
 					.finally(() => {
 						this.matchStarting = false;
 					});
@@ -221,10 +220,11 @@ export class GameRoom extends Room<State> {
 			.then((snapshot) => {
 				if (snapshot.val()) {
 					/*
-					We know this is uglier than using a spread operator
-					but unfortunately the GameInfo state is a schema.
+						We know this is uglier than using a spread operator
+						but unfortunately the GameInfo state is a schema
+						and therefore not spreadable.
 				
-    	Sincerely yours, annoyed programmers.
+    					Sincerely yours, annoyed programmers.
 					*/
 					this.state.gameInfo = new GameInfo();
 					this.state.gameInfo.identifier = gameIdentifier;
@@ -242,6 +242,14 @@ export class GameRoom extends Room<State> {
 					updateLobby(this);
 
 					this.broadcast("updateGameInfo", this.state.gameInfo);
+
+					// Unlock the room if maxPlayers in gameInfo is now greater then the amount of players connected.
+					if (
+						this.state.gameInfo.maxPlayers >
+						Object.keys(this.state.players).length
+					) {
+						this.unlock();
+					}
 				} else {
 					throw new Error(`Could not find /games/${gameIdentifier}`);
 				}
@@ -352,10 +360,24 @@ export class GameRoom extends Room<State> {
 					});
 				}
 			}
-			console.log(`DISPATHING ACTION ${action}`);
 			this.gameStore.dispatch(action);
-
 			this.broadcast("newState", this.gameStore.getState());
+
+			const gameState = this.gameStore.getState();
+			if (gameState.winner !== null) {
+				const winningPlayer = this.state.players[
+					Object.keys(this.state.playerIndices).filter(
+						(key: string) => {
+							return (
+								this.state.playerIndices[key] ===
+								gameState.winner
+							);
+						}
+					)[0]
+				];
+
+				this.endMatch(winningPlayer, "The match has ended!");
+			}
 		} else {
 			client.error(
 				8995,
@@ -365,10 +387,16 @@ export class GameRoom extends Room<State> {
 		}
 	}
 
-	endMatch(winner: Player): boolean {
+	endMatch(winner: Player, message: string): boolean {
 		this.state.playState = PlayState.Finished;
 
-		this.broadcast("endMatch", { winner: winner });
+		this.broadcast("endMatch", {
+			winner: {
+				username: winner.username,
+				firebaseUID: winner.firebaseUID,
+			},
+			message: message,
+		});
 
 		return true;
 	}
@@ -378,9 +406,11 @@ export class GameRoom extends Room<State> {
 	onJoin(client: Client, options: any) {
 		// check if password matches that of the room
 		if (
+			this.state.roomPassword &&
 			options.password !== this.state.roomPassword &&
 			this.state.roomPassword !== ""
 		) {
+			// Don't change this message, it is used in a string equality HACK!!!!!
 			throw new Error("Password does not match!");
 		}
 
@@ -411,6 +441,7 @@ export class GameRoom extends Room<State> {
 	}
 
 	onLeave(client: Client, consented: boolean) {
+		const playerUsername = this.state.players[client.sessionId].username;
 		// Remove this client from the list.
 		delete this.state.players[client.sessionId];
 
@@ -425,6 +456,17 @@ export class GameRoom extends Room<State> {
 				hostFirebaseUID: this.state.players[this.state.hostPlayer]
 					.firebaseUID,
 			});
+		}
+
+		// End the match if someone leaves while the game is running.
+		if (
+			this.state.playState === PlayState.Playing &&
+			otherSessionKeys.length > 0
+		) {
+			this.endMatch(
+				this.state.players[otherSessionKeys[0]],
+				`Player ${playerUsername} Left!`
+			);
 		}
 	}
 

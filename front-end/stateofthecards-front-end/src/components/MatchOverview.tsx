@@ -77,63 +77,72 @@ class MatchOverview extends Component<IProps, IState> {
 			Object.keys(roomState.players).length >=
 			roomState.gameInfo.minPlayers;
 
-		const startMatchButtonStyle = hasEnoughPlayers
-			? [stylesB.buttonBase, stylesB.buttonFilledPrimary].join(" ")
-			: [stylesB.buttonBase, stylesB.buttonFilledDisabled].join(" ");
+		const hasTooManyPlayers =
+			Object.keys(roomState.players).length >
+			roomState.gameInfo.maxPlayers;
 
-		const startMatchError = hasEnoughPlayers ? "" : "Not enough players!";
+		const startMatchButtonStyle =
+			hasEnoughPlayers && !hasTooManyPlayers
+				? [stylesB.buttonBase, stylesB.buttonFilledPrimary].join(" ")
+				: [stylesB.buttonBase, stylesB.buttonFilledDisabled].join(" ");
+
+		let startMatchError = "";
+		startMatchError = hasEnoughPlayers
+			? startMatchError
+			: "Not enough players!";
+
+		startMatchError = hasTooManyPlayers
+			? "Too many players!"
+			: startMatchError;
 
 		return (
 			<div className={styles.wrapper}>
-				<div className={styles.overviewWrapper}>
-					<div className={styles.playerWrapper}>
-						{this.state.players.map((player, index) => (
-							<MatchPlayerListEntry
-								key={index}
-								sessionId={player.sessionId}
-								firebaseUid={player.firebaseUid}
-								playerName={player.playerName}
-							/>
-						))}
-					</div>
-
-					<div className={styles.infoWrapper}>
-						<LogoCard game={roomState.gameInfo}></LogoCard>
-
-						<p>Min player count: {roomState.gameInfo.minPlayers}</p>
-						<p>Max player count: {roomState.gameInfo.maxPlayers}</p>
-
-						<p className={styles.gameDescription}>
-							Description: {roomState.gameInfo.description}
-						</p>
-					</div>
+				<div className={styles.playerWrapper}>
+					{this.state.players.map((player, index) => (
+						<MatchPlayerListEntry
+							key={index}
+							sessionId={player.sessionId}
+							firebaseUid={player.firebaseUid}
+							playerName={player.playerName}
+						/>
+					))}
 				</div>
 
-				{isHost && (
-					<div
-						className={
-							stylesB.buttonWrapper +
-							" " +
-							stylesB.backgroundDark +
-							" " +
-							styles.hostActions
-						}
-					>
-						<button
-							className={startMatchButtonStyle}
-							disabled={!hasEnoughPlayers}
-							onClick={() => {
-								this.startMatchAction();
-							}}
+				<div className={styles.infoWrapper}>
+					{isHost && (
+						<div
+							className={
+								stylesB.buttonWrapper + " " + styles.hostActions
+							}
 						>
-							Start match ({Object.keys(roomState.players).length}
-							/{roomState.gameInfo.maxPlayers})
-						</button>
-						<p className={styles.startMatchError}>
-							{startMatchError}
-						</p>
-					</div>
-				)}
+							<div className={styles.buttonWrapper}>
+								<button
+									className={startMatchButtonStyle}
+									disabled={
+										!hasEnoughPlayers || hasTooManyPlayers
+									}
+									onClick={() => {
+										this.startMatchAction();
+									}}
+								>
+									Start match (
+									{Object.keys(roomState.players).length}/
+									{roomState.gameInfo.maxPlayers})
+								</button>
+							</div>
+							<p className={styles.startMatchError}>
+								{startMatchError}
+							</p>
+						</div>
+					)}
+
+					<LogoCard game={roomState.gameInfo}></LogoCard>
+
+					<p>Min player count: {roomState.gameInfo.minPlayers}</p>
+					<p>Max player count: {roomState.gameInfo.maxPlayers}</p>
+
+					<p>Description: {roomState.gameInfo.description}</p>
+				</div>
 			</div>
 		);
 	}

@@ -54,6 +54,12 @@ class App extends Component<IProps, IState> {
 				UserSingleton.getInstance().setUserInfo({
 					firebaseUser: undefined,
 				});
+
+				const currentRoom = UserSingleton.getInstance().getUserInfo()
+					.currentRoom;
+				if (currentRoom !== undefined) {
+					currentRoom.leave();
+				}
 			}
 
 			this.setState({ user: user });

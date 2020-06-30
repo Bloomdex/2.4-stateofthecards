@@ -75,12 +75,21 @@
 	width: 135px;
 
 	-webkit-user-drag: none;
-	user-drag: none;
 }
 
 .quickJoinCard:hover,
 .quickJoinCard:active {
 	cursor: default;
+}
+
+.QRCodeWrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.QRCodeWrapper > div {
+	margin-top: 15px;
 }
 
 @media only screen and (max-width: 1350px) {
@@ -98,6 +107,5 @@
 		width: 8vw;
 
 		-webkit-user-drag: none;
-		user-drag: none;
 	}
 }

@@ -7,6 +7,7 @@ import { monitor } from "@colyseus/monitor";
 
 import { GameRoom } from "./GameRoom";
 import { ExtendedLobbyRoom } from "./ExtendedLobbyRoom";
+import { QuickGameRoom } from "./QuickGameRoom";
 
 const port = Number(process.env.PORT || 2567);
 const app = express();
@@ -22,7 +23,7 @@ const gameServer = new Server({
 // register your room handlers
 gameServer.define("lobby_room", ExtendedLobbyRoom);
 gameServer.define("game_room", GameRoom).enableRealtimeListing();
-gameServer.define("quick_game_room", GameRoom).enableRealtimeListing();
+gameServer.define("quick_game_room", QuickGameRoom).enableRealtimeListing();
 
 /**
  * Register @colyseus/social routes
@@ -37,3 +38,4 @@ app.use("/colyseus", monitor());
 
 // start game server
 gameServer.listen(port);
+console.log("Colyseus is now running.");

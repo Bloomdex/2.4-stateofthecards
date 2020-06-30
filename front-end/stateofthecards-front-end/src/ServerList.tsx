@@ -5,13 +5,15 @@ import stylesB from "./Base.module.css";
 import ServerListEntry from "./components/ServerListEntry";
 import HeaderBar from "./components/HeaderBar";
 import UserSingleton from "./config/UserSingleton";
-import { RoomAvailable } from "colyseus.js";
-import { FullscreenErrorOverlay } from "./components/FullscreenErrorOverlay";
+import { RoomAvailable, Room } from "colyseus.js";
+import FullscreenMessageOverlay from "./components/FullscreenMessageOverlay";
 import FirebaseApp from "./config/Firebase";
+import FullscreenInputOverlay from "./components/FullscreenInputOverlay";
 
 enum ServerListState {
 	Idle,
 	RedirectDashboard,
+	RedirectGame,
 }
 
 interface IProps {}
@@ -25,6 +27,7 @@ interface IState {
 	friends: string[];
 	showUnlockedOnly: boolean;
 	errorMessage?: string;
+	errorRoomId?: string;
 }
 
 class ServerList extends Component<IProps, IState> {
@@ -38,6 +41,8 @@ class ServerList extends Component<IProps, IState> {
 			showFriendsOnly: false,
 			friends: [],
 			showUnlockedOnly: false,
+			errorMessage: undefined,
+			errorRoomId: undefined,
 		};
 	}
 
@@ -73,17 +78,107 @@ class ServerList extends Component<IProps, IState> {
 		);
 	}
 
+	joinGame(roomId: string, password: string) {
+		UserSingleton.getInstance()
+			.getUserInfo()
+			.colyseusClient?.joinById(roomId, {
+				password: password,
+				playerInfo: {
+					firebaseUID: UserSingleton.getInstance().getUserInfo()
+						.firebaseUser?.uid,
+					username: UserSingleton.getInstance().getUserInfo()
+						.displayName,
+				},
+			})
+			.then((room: Room<any>) => {
+				UserSingleton.getInstance().setUserInfo({
+					currentRoom: room,
+				});
+
+				this.setState({
+					currentState: ServerListState.RedirectGame,
+				});
+			})
+			.catch((error) => {
+				this.setState({
+					errorMessage: error.message,
+					errorRoomId: roomId,
+				});
+			});
+	}
+
 	render() {
 		switch (this.state.currentState) {
 			case ServerListState.Idle:
 				return this.renderServerList();
 			case ServerListState.RedirectDashboard:
 				return <Redirect to="/dashboard"></Redirect>;
+			case ServerListState.RedirectGame:
+				return (
+					<Redirect
+						to={
+							"/match?id=" +
+							UserSingleton.getInstance().getUserInfo()
+								.currentRoom?.id
+						}
+					></Redirect>
+				);
 		}
 	}
 
 	renderServerList() {
 		let showErrorMessage = this.state.errorMessage ? true : false;
+
+		const isPasswordError =
+			this.state.errorMessage === "Password does not match!"
+				? true
+				: false;
+
+		/*
+			Never gonna give you up
+			Never gonna let you down
+			Never gonna run around and desert you
+			Never gonna make you cry
+			Never gonna say goodbye
+			Never gonna tell a lie and hurt you
+		*/
+		let fullScreenOverlay: JSX.Element = <div />;
+
+		fullScreenOverlay = showErrorMessage ? (
+			<FullscreenMessageOverlay
+				message={this.state.errorMessage}
+				buttonText="Back"
+				onClickButton={() => {
+					this.setState({
+						errorMessage: undefined,
+					});
+				}}
+				isVisible={showErrorMessage}
+			></FullscreenMessageOverlay>
+		) : (
+			fullScreenOverlay
+		);
+
+		fullScreenOverlay = isPasswordError ? (
+			<FullscreenInputOverlay
+				message="Enter password:"
+				buttonText="Join"
+				onClickButton={(value) => {
+					if (this.state.errorRoomId) {
+						this.joinGame(this.state.errorRoomId, value); // We try and join with a password this time.
+					}
+				}}
+				onClickBackButton={() => {
+					this.setState({
+						errorMessage: undefined,
+						errorRoomId: undefined,
+					});
+				}}
+				isVisible={showErrorMessage}
+			></FullscreenInputOverlay>
+		) : (
+			fullScreenOverlay
+		);
 
 		let gamesFiltered = this.state.games;
 		if (this.state.showFriendsOnly) {
@@ -110,17 +205,7 @@ class ServerList extends Component<IProps, IState> {
 					stylesB.background
 				}
 			>
-				<FullscreenErrorOverlay
-					message={this.state.errorMessage}
-					buttonText="Back"
-					onClickButton={() => {
-						this.setState({
-							errorMessage: undefined,
-						});
-					}}
-					isVisible={showErrorMessage}
-				></FullscreenErrorOverlay>
-
+				{fullScreenOverlay}
 				<HeaderBar>
 					<div className={stylesB.buttonWrapper}>
 						<button
@@ -201,10 +286,8 @@ class ServerList extends Component<IProps, IState> {
 								gameName={value.metadata.gameName}
 								playerCount={value.clients}
 								maxPlayerCount={value.metadata.maxClients}
-								onJoinFailed={(e) => {
-									this.setState({
-										errorMessage: e.message,
-									});
+								onJoinPressed={(roomId) => {
+									this.joinGame(roomId, ""); // We try to join without a password on press.
 								}}
 							/>
 						);

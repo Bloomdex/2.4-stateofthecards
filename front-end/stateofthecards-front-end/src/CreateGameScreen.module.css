@@ -26,14 +26,17 @@
 /*------------------------------------------------Card panel------------------------------------------------*/
 .selectionPanel {
 	overflow-y: none;
+	overflow-x: none;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
 	gap: 10px;
+	color: #ffffff;
 }
 
 .selectionPanel > .cardList {
 	overflow-y: auto;
+	overflow-x: none;
 }
 
 .selectionPanel > div {
@@ -42,6 +45,10 @@
 
 .selectionPanel > div > button {
 	width: 100%;
+}
+
+.selectableCard:hover {
+	cursor: pointer;
 }
 
 .card {
@@ -56,9 +63,17 @@
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
+	color: #ffffff;
 }
 
-.previewCard {
+.preview > div {
+	width: 20vw;
+	height: 32vw;
+	margin: 0;
+	padding: 0;
+}
+
+.preview > div > figure {
 	width: 20vw;
 	height: 32vw;
 	margin: 0;
@@ -76,12 +91,46 @@
 	width: 100%;
 }
 
-/*------------------------------------------------Card settings: Game settings------------------------------------------------*/
-.gameSettingsWrapper th,
-td {
-	border-bottom: 1px solid #ddd;
+.cardSettings button {
+	margin-top: 10px;
 }
 
-.gameSettingsWrapper {
+/*------------------------------------------------Card settings: Game settings------------------------------------------------*/
+.gameSettings {
+	display: grid;
+	grid-template-columns: max-content auto;
+	gap: 5px;
+	padding-bottom: 20px !important;
+}
+
+.gameSettings > div {
 	color: #ffffff;
+}
+
+.gameSettings input,
+.gameSettings textarea {
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.gameSettings textarea {
+	resize: vertical;
+}
+
+.gameSettings .rangeSliderWrapper {
+	box-sizing: border-box;
+	margin: 0 5px;
+}
+
+/*------------------------------------------------Card settings: Card design settings------------------------------------------------*/
+.cardDesignSettings {
+	display: grid;
+	grid-template-columns: max-content auto;
+	gap: 5px;
+	color: #ffffff;
+}
+
+.cardDesignSettings input {
+	box-sizing: border-box;
+	width: 100%;
 }

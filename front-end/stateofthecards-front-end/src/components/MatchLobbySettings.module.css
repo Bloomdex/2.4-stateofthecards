@@ -64,15 +64,17 @@
 .settings > .filterButtons > div > button {
 	margin: 5px 0;
 	width: 100%;
-	border-radius: 6px;
+	border-radius: 0px;
 }
 
 .settings > .filterButtons > div:first-child > button {
+	border-radius: 6px;
 	border-bottom-left-radius: 0;
 	border-bottom-right-radius: 0;
 }
 
 .settings > .filterButtons > div:last-child > button {
+	border-radius: 6px;
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
 }

@@ -7,6 +7,7 @@ interface IProps {
 	sessionId: string;
 	firebaseUid: string;
 	playerName: string;
+	disableKick?: boolean;
 }
 
 interface IState {
@@ -64,18 +65,19 @@ class MatchPlayerListEntry extends React.Component<IProps, IState> {
 		) : (
 			""
 		);
-		const removeButton = this.state.showRemoveIcon ? (
-			<img
-				src={"icons/remove-icon.svg"}
-				className={styles.icon}
-				alt="Kick from lobby"
-				onClick={() => {
-					this.kickAction();
-				}}
-			></img>
-		) : (
-			""
-		);
+		const removeButton =
+			this.state.showRemoveIcon && !this.props.disableKick ? (
+				<img
+					src={"icons/remove-icon.svg"}
+					className={styles.icon}
+					alt="Kick from lobby"
+					onClick={() => {
+						this.kickAction();
+					}}
+				></img>
+			) : (
+				""
+			);
 
 		return (
 			<div className={styles.entry}>

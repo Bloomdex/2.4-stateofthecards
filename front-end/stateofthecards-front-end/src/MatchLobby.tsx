@@ -6,14 +6,14 @@ import styles from "./MatchLobby.module.css";
 import stylesB from "./Base.module.css";
 import stylesH from "./components/HeaderBar.module.css";
 import MatchLobbySettings from "./components/MatchLobbySettings";
-import MatchLobbyPlayers from "./components/MatchLobbyPlayers";
 import MatchLobbyOverview from "./components/MatchOverview";
 import TabSelection from "./components/TabSelection";
 import { Room } from "colyseus.js";
 import UserSingleton from "./config/UserSingleton";
-import { FullscreenErrorOverlay } from "./components/FullscreenErrorOverlay";
+import FullscreenMessageOverlay from "./components/FullscreenMessageOverlay";
 import GameScreen from "./GameScreen";
 import { RootState } from "stateofthecards-gamelib";
+import FullscreenInputOverlay from "./components/FullscreenInputOverlay";
 
 interface IProps {}
 
@@ -37,6 +37,13 @@ interface IState {
 	isHost: boolean;
 	errorMessage?: string;
 	gameState?: RootState;
+	matchEndInfo?: {
+		winner: {
+			firebaseUID: string;
+			username: string;
+		};
+		message: string;
+	};
 }
 
 class MatchLobby extends React.Component<IProps, IState> {
@@ -123,6 +130,13 @@ class MatchLobby extends React.Component<IProps, IState> {
 				lobbyInfo.gameInfo = message;
 			}
 		});
+
+		room.onMessage("endMatch", (message) => {
+			this.setState({
+				currentState: MatchLobbyState.Finished,
+				matchEndInfo: message,
+			});
+		});
 	}
 
 	switchTab(index: number) {
@@ -143,27 +157,138 @@ class MatchLobby extends React.Component<IProps, IState> {
 				);
 			case MatchLobbyState.Idle:
 				return this.renderLobby();
+			case MatchLobbyState.Finished:
+				return this.renderEndScreen();
 			case MatchLobbyState.RedirectServerList:
 				return <Redirect to="/servers"></Redirect>;
 		}
 	}
 
+	renderEndScreen() {
+		const currentRoom = UserSingleton.getInstance().getUserInfo()
+			.currentRoom;
+
+		const winnerText = this.state.matchEndInfo?.winner ? (
+			<h2>
+				The winner of this match is{" "}
+				{this.state.matchEndInfo?.winner.username}!
+			</h2>
+		) : (
+			""
+		);
+
+		return (
+			<div
+				className={[
+					stylesB.wrapper,
+					stylesB.background,
+					styles.endScreenWrapper,
+				].join(" ")}
+			>
+				<div className={styles.endScreenContent}>
+					<h1>{this.state.matchEndInfo?.message}</h1>
+					{winnerText}
+					<img src="https://firebasestorage.googleapis.com/v0/b/bloomdex-stateofthecards.appspot.com/o/info%2Fcake-icon.png?alt=media&token=9b6fa6c7-f164-4ac4-b5ae-bc18eb54c21e"></img>
+					<button
+						className={
+							stylesB.buttonBase +
+							" " +
+							stylesB.buttonFilledSecondary
+						}
+						onClick={() => {
+							UserSingleton.getInstance()
+								.getUserInfo()
+								.currentRoom?.leave();
+							this.setState({
+								currentState:
+									MatchLobbyState.RedirectServerList,
+							});
+						}}
+					>
+						Return to Server List
+					</button>
+				</div>
+			</div>
+		);
+	}
+
 	renderLobby() {
 		let showErrorMessage = this.state.errorMessage ? true : false;
 
+		const isPasswordError =
+			this.state.errorMessage === "Info: Password does not match!"
+				? true
+				: false;
+
+		let fullScreenOverlay: JSX.Element = <div />;
+
+		fullScreenOverlay = showErrorMessage ? (
+			<FullscreenMessageOverlay
+				message={this.state.errorMessage}
+				buttonText="Return to Server List"
+				onClickButton={() => {
+					this.setState({
+						currentState: MatchLobbyState.RedirectServerList,
+					});
+				}}
+				isVisible={showErrorMessage}
+			></FullscreenMessageOverlay>
+		) : (
+			fullScreenOverlay
+		);
+
+		fullScreenOverlay = isPasswordError ? (
+			<FullscreenInputOverlay
+				message="Enter password:"
+				buttonText="Join"
+				onClickButton={(value) => {
+					const search = window.location.search;
+					const params = new URLSearchParams(search);
+					const lobbyId = params.get("id");
+
+					if (
+						!UserSingleton.getInstance().getUserInfo()
+							.currentRoom &&
+						lobbyId
+					) {
+						UserSingleton.getInstance()
+							.getUserInfo()
+							.colyseusClient?.joinById(lobbyId, {
+								password: value,
+								playerInfo: {
+									firebaseUID: UserSingleton.getInstance().getUserInfo()
+										.firebaseUser?.uid,
+									username: UserSingleton.getInstance().getUserInfo()
+										.displayName,
+								},
+							})
+							.then((room: Room<any>) => {
+								this.setRoomListeners(room);
+								this.setState({
+									errorMessage: undefined,
+								});
+							})
+							.catch((e) => {
+								this.setState({
+									errorMessage: "Info: " + e.message,
+								});
+							});
+					}
+				}}
+				onClickBackButton={() => {
+					this.setState({
+						currentState: MatchLobbyState.RedirectServerList,
+					});
+				}}
+				isVisible={showErrorMessage}
+			></FullscreenInputOverlay>
+		) : (
+			fullScreenOverlay
+		);
+
 		return (
 			<div className={styles.wrapper}>
-				<FullscreenErrorOverlay
-					message={this.state.errorMessage}
-					buttonText="Return to Server List"
-					onClickButton={() => {
-						this.setState({
-							currentState: MatchLobbyState.RedirectServerList,
-						});
-					}}
-					isVisible={showErrorMessage}
-				></FullscreenErrorOverlay>
-
+				{fullScreenOverlay}
 				<HeaderBar>
 					<div className={stylesB.buttonWrapper}>
 						<button
@@ -195,26 +320,26 @@ class MatchLobby extends React.Component<IProps, IState> {
 						</p>
 					</div>
 
-					<TabSelection
-						onButtonClicked={(i) => this.switchTab(i)}
-						buttons={
-							this.state.isHost
-								? ["Overview", "Invite", "Settings"]
-								: ["Overview", "Invite"]
-						}
-						cssClass={styles.navButtons}
-						cssButtonWrapperClass={stylesB.buttonWrapper}
-						cssButtonActiveClass={
-							stylesB.buttonBase +
-							" " +
-							stylesB.buttonFilledPrimary
-						}
-						cssButtonInactiveClass={
-							stylesB.buttonBase +
-							" " +
-							stylesB.buttonFilledSecondary
-						}
-					/>
+					{this.state.isHost ? (
+						<TabSelection
+							onButtonClicked={(i) => this.switchTab(i)}
+							buttons={["Overview", "Invite", "Settings"]}
+							cssClass={styles.navButtons}
+							cssButtonWrapperClass={stylesB.buttonWrapper}
+							cssButtonActiveClass={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledPrimary
+							}
+							cssButtonInactiveClass={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledSecondary
+							}
+						/>
+					) : (
+						<div />
+					)}
 				</HeaderBar>
 
 				<div className={stylesB.background + " " + styles.tabContent}>
@@ -234,8 +359,6 @@ class MatchLobby extends React.Component<IProps, IState> {
 				} else {
 					return <div />;
 				}
-			case Tab.Invite:
-				return <MatchLobbyPlayers />;
 			case Tab.Settings:
 				return <MatchLobbySettings />;
 		}

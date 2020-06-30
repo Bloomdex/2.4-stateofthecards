@@ -5,7 +5,6 @@
 	left: 0;
 	bottom: 0;
 	right: 0;
-	overflow: auto;
 }
 
 .rounded {
@@ -32,6 +31,12 @@
 .success {
 	color: #379161;
 	font-weight: bold;
+}
+
+.center {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 /*------------------------------------------------General: Interactive------------------------------------------------*/
@@ -108,14 +113,26 @@
 	box-shadow: 0 5px #675e82;
 	transition: transform 0.05s;
 }
-
 .buttonFilledTertiary:hover {
 	background-color: #867da1;
 }
-
 .buttonFilledTertiary:active {
 	background-color: #736a91;
 	box-shadow: 0 3px #675e82;
+	transform: translateY(4px);
+}
+
+.buttonFilledWarning {
+	background-color: #cd4746;
+	box-shadow: 0 5px #c03535;
+	transition: transform 0.05s;
+}
+.buttonFilledWarning:hover {
+	background-color: #d35f5f;
+}
+.buttonFilledWarning:active {
+	background-color: #cd4746;
+	box-shadow: 0 5px #c03535;
 	transform: translateY(4px);
 }
 
@@ -153,14 +170,10 @@
 
 .collapsibleHeader:hover {
 	cursor: pointer;
-	background-color: #5c5c5c;
+	background-color: rgba(255, 255, 255, 0.2);
 }
 
 .collapsibleContent {
-	padding: 10px 10px 10px 10px;
-}
-
-.collapsibleContent > div {
-	padding: 5px;
-	background-color: #5c5c5c;
+	background-color: rgba(255, 255, 255, 0.1);
+	padding: 10px;
 }

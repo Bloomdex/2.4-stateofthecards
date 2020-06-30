@@ -1,7 +1,9 @@
 .wrapper {
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between;
 	height: 100%;
+	width: 100%;
 }
 
 .card {
@@ -9,21 +11,25 @@
 	height: 15vw;
 }
 
-/*------------------------------------------------Play area: Played cards area------------------------------------------------*/
+/*------------------------------------------------Turn info------------------------------------------------*/
+.turnInfoWrapper {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+}
+
+.turnInfoWrapper h1 {
+	color: #ffffff;
+}
+
+/*------------------------------------------------Played cards------------------------------------------------*/
 .playedCardsArea {
-	flex-grow: 1;
 	width: 100%;
 	display: flex;
 	flex-direction: row;
 	justify-content: center;
 	align-items: center;
-}
-
-.playedCardsArea .dropArea:hover {
-	border-radius: 6px;
-	border-color: red;
-	border-width: 4px;
-	background-color: rgba(255, 255, 255, 0.2);
+	overflow-x: none;
 }
 
 .cardPreview {
@@ -36,18 +42,39 @@
 	height: 100%;
 }
 
-/*------------------------------------------------Play area: Deck area------------------------------------------------*/
-.deckArea {
-	width: 100%;
+/*------------------------------------------------Deck------------------------------------------------*/
+.deckAreaWrapper {
 	display: flex;
-	justify-content: center;
+	overflow-x: auto !important;
+	overflow-y: hidden !important;
 }
 
-.nonDraggable {
-	user-drag: none;
-	user-select: none;
-	-moz-user-select: none;
-	-webkit-user-drag: none;
-	-webkit-user-select: none;
-	-ms-user-select: none;
+.deckArea {
+	display: flex;
+	flex-direction: row;
+	min-width: min-content;
+	margin: auto;
+}
+
+/*------------------------------------------------Options overlay------------------------------------------------*/
+.optionsOverlayWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+.optionsOverlay {
+	display: flex;
+	flex-direction: column;
+	color: #ffffff;
+}
+
+.optionsOverlay > div {
+	display: flex;
+	flex-direction: column;
+}
+
+.optionsOverlay > div > button {
+	margin-bottom: 15px;
 }

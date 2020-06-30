@@ -12,6 +12,7 @@ import HeaderBar from "./components/HeaderBar";
 import FirebaseApp from "./config/Firebase";
 import UserSingleton from "./config/UserSingleton";
 import { Room } from "colyseus.js";
+import QRCode from "qrcode.react";
 
 enum DashBoardState {
 	Idle,
@@ -51,10 +52,19 @@ class Dashboard extends Component<IProps, IState> {
 	}
 
 	render() {
+		const currentRoom = UserSingleton.getInstance().getUserInfo()
+			.currentRoom;
+
 		switch (this.state.currentState) {
 			case DashBoardState.Idle:
 				return this.renderDashBoard();
 			case DashBoardState.RedirectServerList:
+				if (currentRoom) {
+					currentRoom.leave();
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: undefined,
+					});
+				}
 				return <Redirect to="/servers"></Redirect>;
 			case DashBoardState.RedirectCreateMatch:
 				return (
@@ -67,11 +77,31 @@ class Dashboard extends Component<IProps, IState> {
 					></Redirect>
 				);
 			case DashBoardState.RedirectQuickJoin:
-				break;
+				return (
+					<Redirect
+						to={`/match?id=${
+							UserSingleton.getInstance().getUserInfo()
+								.currentRoom?.id
+						}`}
+					/>
+				);
 			case DashBoardState.RedirectCreateGame:
+				if (currentRoom) {
+					currentRoom.leave();
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: undefined,
+					});
+				}
+
 				return <Redirect to="/create"></Redirect>;
 			case DashBoardState.Logout:
 				// Logout using Firebase
+				if (currentRoom) {
+					currentRoom.leave();
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: undefined,
+					});
+				}
 				FirebaseApp.auth().signOut();
 				return <Redirect to="/"></Redirect>;
 		}
@@ -110,7 +140,9 @@ class Dashboard extends Component<IProps, IState> {
 							State of the cards
 						</p>
 						<p className={stylesH.headerTextSmall}>
-							Welcome back{" "}
+							Welcome back
+							{UserSingleton.getInstance()?.getUserInfo()
+								.firebaseUser?.displayName && " "}
 							{
 								UserSingleton.getInstance()?.getUserInfo()
 									.firebaseUser?.displayName
@@ -145,11 +177,44 @@ class Dashboard extends Component<IProps, IState> {
 									></img>
 									<p>Add Friends</p>
 								</div>
+
 								<AddFriendsMenu
 									onClickCancel={() => {
+										this.joinFriendsCard.current?.setCurrentChild(
+											0
+										);
+									}}
+									onClickQR={() => {
 										this.joinFriendsCard.current?.setNextChild();
 									}}
 								/>
+
+								<div className={styles.QRCodeWrapper}>
+									<QRCode
+										value={
+											"https://stateofthe.cards/dashboard?add_uid=" +
+											UserSingleton.getInstance().getUserInfo()
+												.firebaseUser?.uid
+										}
+									/>
+
+									<div className={stylesB.buttonWrapper}>
+										<button
+											className={
+												stylesB.buttonBase +
+												" " +
+												stylesB.buttonFilledTertiary
+											}
+											onClick={() => {
+												this.joinFriendsCard.current?.setCurrentChild(
+													1
+												);
+											}}
+										>
+											Back
+										</button>
+									</div>
+								</div>
 							</MenuCard>
 						</div>
 
@@ -196,6 +261,17 @@ class Dashboard extends Component<IProps, IState> {
 									className={styles.cardContent}
 									onClick={() => {
 										this.createMatchCard.current?.setNextChild();
+
+										const currentRoom = UserSingleton.getInstance().getUserInfo()
+											.currentRoom;
+										if (currentRoom) {
+											currentRoom.leave();
+											UserSingleton.getInstance().setUserInfo(
+												{
+													currentRoom: undefined,
+												}
+											);
+										}
 
 										UserSingleton.getInstance()
 											.getUserInfo()
@@ -276,6 +352,16 @@ class Dashboard extends Component<IProps, IState> {
 												UserSingleton.getInstance().setUserInfo(
 													{
 														currentRoom: room,
+													}
+												);
+
+												room.onMessage(
+													"startMatch",
+													(message) => {
+														this.setState({
+															currentState:
+																DashBoardState.RedirectQuickJoin,
+														});
 													}
 												);
 

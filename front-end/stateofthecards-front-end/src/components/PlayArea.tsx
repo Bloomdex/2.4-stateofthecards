@@ -1,9 +1,11 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useState } from "react";
 import styles from "./PlayArea.module.css";
+import stylesB from "../Base.module.css";
 import UserSingleton from "../config/UserSingleton";
-import GameCard from "./GameCard";
+import InteractableCard from "./InteractableCard";
 import { RootState, validActions } from "stateofthecards-gamelib";
 import { Rnd } from "react-rnd";
+import CardWithInfo from "../structures/CardWithInfo";
 
 const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 	gameState,
@@ -21,24 +23,42 @@ const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 		topRight: false,
 	};
 
+	const checkCardPossiblePlay = (card: any): boolean => {
+		const validActionsList: any[] =
+			gameState != null ? validActions(gameState) : [];
+
+		if (!validActionsList || validActionsList.length === 0) return false;
+
+		for (let action of validActionsList) {
+			if (action.type === "PLAY_CARD" && action.payload.id === card.id) {
+				return true;
+			}
+		}
+
+		return false;
+	};
+
 	const deckCards = gameState.cards.hands[
 		room?.state.playerIndices[room?.sessionId]
-	]?.map((value: any, index) => {
+	]?.map((card: any, index) => {
 		return (
-			<div onDoubleClick={() => selectPlayCard(index)}>
-				<GameCard cssClass={styles.card} imageUrl={value.face} />
-			</div>
+			<InteractableCard
+				key={index}
+				card={card}
+				disabled={!checkCardPossiblePlay(card)}
+				onClickCard={() => selectPlayCard(index)}
+			/>
 		);
 	});
 
-	const topCard: any =
-		gameState.cards.played[gameState.cards.played.length - 1];
+	const topCard = gameState.cards.played[
+		gameState.cards.played.length - 1
+	] as CardWithInfo;
 
-	const availableCardCount = gameState.cards.remaining.length;
+	const [playedCardActions, setPlayedCardActions]: any[] = useState([]);
 
 	const selectPlayCard = (index: number) => {
-		let validAction = false;
-		let matchedActions: any[] = [];
+		let validPlayActions: any[] = [];
 
 		try {
 			let deck =
@@ -47,32 +67,26 @@ const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 				];
 			let card = deck[index];
 
-			const validActionsList =
+			const validActionsList: any[] =
 				gameState != null ? validActions(gameState) : [];
-			validActionsList.forEach((action: any) => {
+
+			for (let action of validActionsList) {
 				if (
-					action.type === 1 &&
-					action.payload.tags[0] === card.tags[0] &&
-					action.payload.tags[1] === card.tags[1]
+					action.type === "PLAY_CARD" &&
+					action.payload.id === card.id
 				) {
-					validAction = true;
-					matchedActions.push(action);
+					validPlayActions.push(action);
 				}
-			});
-		} catch (e) {
-			console.log(e);
-			console.error("ACTION WAS INVALID.");
+			}
+		} catch (error) {
+			console.error("ACTION WAS INVALID.", error.message);
 		} finally {
-			if (validAction) {
-				if (matchedActions.length > 1) {
-					console.log(
-						"THIS CARD HAS MULTIPLE ACTIONSSSSSSSSSSSSSSSSSSSSSS"
-					);
-					// Send first action for now.
-					room?.send("performAction", matchedActions[0]);
+			if (validPlayActions.length > 0) {
+				if (validPlayActions.length > 1) {
+					setPlayedCardActions(validPlayActions);
 				} else {
-					console.log("ACTION WAS VALID, SENDING...");
-					room?.send("performAction", matchedActions[0]);
+					// Send the first action in the list.
+					room?.send("performAction", validPlayActions[0]);
 				}
 			} else {
 				console.error("ACTION WAS INVALID.");
@@ -80,23 +94,123 @@ const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 		}
 	};
 
+	const grabCardFromStack = () => {
+		room?.send("performAction", {
+			type: "SKIP",
+			tags: [],
+			options: {},
+			effects: [],
+		});
+	};
+
+	const isMyTurn =
+		room?.state.playerIndices[room?.sessionId] ===
+		gameState.turnInfo.current;
+
+	// WHaT tHE aCtuAl fuCK
+	const currentPlayer =
+		room?.state.players[
+			Object.keys(room?.state.playerIndices).filter((key: string) => {
+				return (
+					room?.state.playerIndices[key] ===
+					gameState.turnInfo.current
+				);
+			})[0]
+		];
+
+	let currentPlayerName = "";
+	if (currentPlayer) currentPlayerName = currentPlayer.username;
+
+	const turnMessage = isMyTurn
+		? "Your turn."
+		: currentPlayerName + "'s turn.";
+
+	let stackCount = gameState.cards.remaining.length;
+	if (stackCount === 0 && gameState.cards.played.length > 1) {
+		stackCount = gameState.cards.played.length - 1;
+	}
+
+	let disableGrabCard = !isMyTurn;
+	if (isMyTurn && stackCount === 0) {
+		disableGrabCard = true;
+	}
+
 	return (
 		<div className={styles.wrapper}>
+			<div className={styles.turnInfoWrapper}>
+				<h1>{turnMessage}</h1>
+			</div>
+
 			<div className={styles.playedCardsArea}>
 				<div className={styles.dropArea}>
-					<GameCard cssClass={styles.card} imageUrl={topCard.face} />
+					<InteractableCard key={"c1"} card={topCard} />
 				</div>
 
 				<div>
-					<GameCard
-						cssClass={styles.card}
-						imageUrl={room?.state.gameInfo.cardLogo}
+					<InteractableCard
+						key={"c2"}
+						card={{
+							id: "CardStack",
+							playableOnTags: [],
+							face: room?.state.gameInfo.cardLogo,
+							name: "Grab a card (" + stackCount + ")",
+							tags: [],
+						}}
+						disabled={disableGrabCard}
+						onClickCard={() => {
+							grabCardFromStack();
+						}}
 					/>
-					<label>Cards On Stack: {availableCardCount};</label>
 				</div>
 			</div>
 
-			<div className={styles.deckArea}>{deckCards}</div>
+			<div className={styles.deckAreaWrapper}>
+				<div className={styles.deckArea}>{deckCards}</div>
+			</div>
+
+			{playedCardActions.length !== 0 && (
+				<div
+					className={
+						stylesB.wrapper + " " + styles.optionsOverlayWrapper
+					}
+				>
+					<div className={styles.optionsOverlay}>
+						<h1>Choose an action:</h1>
+
+						<div className={stylesB.buttonWrapper}>
+							{playedCardActions.map(
+								(action: any, index: number) => {
+									return (
+										<button
+											className={
+												stylesB.buttonBase +
+												" " +
+												stylesB.buttonFilledSecondary
+											}
+											key={index}
+											onClick={() => {
+												room?.send(
+													"performAction",
+													action
+												);
+												setPlayedCardActions([]);
+											}}
+										>
+											{
+												action.options[
+													Object.keys(
+														action.options
+													)[0]
+												]
+											}
+										</button>
+									);
+								}
+							)}
+						</div>
+					</div>
+				</div>
+			)}
 		</div>
 	);
 };

@@ -1,11 +1,13 @@
 import React, { useState, FunctionComponent } from "react";
-import styles from "./LogoCard.module.css";
+import styles from "./InteractableCard.module.css";
 import IGameInfo from "../structures/IGameInfo";
 import UserSingleton from "../config/UserSingleton";
 import FirebaseApp from "../config/Firebase";
 
 interface IProps {
 	game: IGameInfo;
+	hideFavorite?: boolean;
+	showExtraInfo?: boolean;
 	onClickCard?: () => void;
 }
 
@@ -58,6 +60,12 @@ const LogoCard: FunctionComponent<IProps> = (props: IProps) => {
 		? "icons/favorite-icon-selected.svg"
 		: "icons/favorite-icon.svg";
 
+	let info = props.game.name;
+
+	if (props.showExtraInfo) {
+		info += ` (${props.game.minPlayers}-${props.game.maxPlayers})`;
+	}
+
 	return (
 		<div
 			className={styles.wrapper}
@@ -65,18 +73,20 @@ const LogoCard: FunctionComponent<IProps> = (props: IProps) => {
 				if (props.onClickCard) props.onClickCard();
 			}}
 		>
-			<figure className={styles.card}>
+			<figure className={styles.card + " " + styles.interactable}>
 				<img src={props.game.cardLogo} alt="" />
 
 				<div className={styles.slideOut}>
-					<figcaption>{props.game.name}</figcaption>
-					<img
-						alt=""
-						onClick={() => {
-							onClickFavorite();
-						}}
-						src={favoriteIconUrl}
-					></img>
+					<figcaption>{info}</figcaption>
+					{!props.hideFavorite && (
+						<img
+							alt=""
+							onClick={() => {
+								onClickFavorite();
+							}}
+							src={favoriteIconUrl}
+						></img>
+					)}
 				</div>
 			</figure>
 		</div>

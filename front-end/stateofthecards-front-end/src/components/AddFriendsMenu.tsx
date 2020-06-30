@@ -6,6 +6,7 @@ import UserSingleton from "../config/UserSingleton";
 
 interface IProps {
 	onClickCancel: () => void;
+	onClickQR: () => void;
 }
 
 interface IState {
@@ -268,6 +269,21 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 								Add
 							</button>
 						</div>
+					</div>
+
+					<div className={stylesB.buttonWrapper}>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledSecondary
+							}
+							onClick={() => {
+								this.props.onClickQR();
+							}}
+						>
+							Show QR
+						</button>
 					</div>
 
 					<div className={stylesB.buttonWrapper}>

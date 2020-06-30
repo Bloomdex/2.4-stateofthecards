@@ -6,6 +6,7 @@ import IUserInfo from "./LoginForm";
 import FirebaseApp from "../config/Firebase";
 import ReCAPTCHA from "react-google-recaptcha";
 import ReactDOM from "react-dom";
+import UserSingleton from "../config/UserSingleton";
 
 interface IProps {
 	onClickBack: () => void;
@@ -89,9 +90,15 @@ class RegisterForm extends Component<IProps, IState> {
 					this.state.password
 				)
 				.then((user) => {
-					user.user?.updateProfile({
-						displayName: this.state.displayName,
-					});
+					user.user
+						?.updateProfile({
+							displayName: this.state.displayName,
+						})
+						.then(() => {
+							UserSingleton.getInstance().setUserInfo({
+								displayName: this.state.displayName,
+							});
+						});
 
 					if (user.user) {
 						FirebaseApp.database()
