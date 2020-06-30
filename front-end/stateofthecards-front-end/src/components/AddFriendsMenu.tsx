@@ -41,10 +41,12 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 			.orderByChild("email")
 			.equalTo(input)
 			.on("value", (data) => {
+				console.log("asdsad");
 				user = data.val();
 
 				if (input !== "") {
 					if (user) {
+						console.log("1");
 						this.setState({
 							lookingFor: user,
 							resultMsg: "",
@@ -52,6 +54,7 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 							showAddButton: true,
 						});
 					} else {
+						console.log("2");
 						this.setState({
 							resultMsg: "User not found.",
 							resultSuccess: false,
@@ -59,6 +62,7 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 						});
 					}
 				} else {
+					console.log("3");
 					this.setState({
 						resultMsg: "",
 						resultSuccess: false,
@@ -212,6 +216,7 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 	}
 
 	render() {
+		console.log(this.state.resultSuccess, this.state.resultMsg);
 		return (
 			<div className={styles.frameWrapper}>
 				<div className={styles.frame}>
@@ -282,7 +287,7 @@ class AddFriendsMenu extends React.Component<IProps, IState> {
 								this.props.onClickQR();
 							}}
 						>
-							Show QR
+							Show my QR
 						</button>
 					</div>
 

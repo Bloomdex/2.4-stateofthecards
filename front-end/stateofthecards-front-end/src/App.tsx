@@ -37,7 +37,7 @@ class App extends Component<IProps, IState> {
 		FirebaseApp.auth().onAuthStateChanged((user) => {
 			this.setState({ checkAuthState: true });
 
-			let client = new Colyseus.Client("ws://localhost:2567");
+			let client = new Colyseus.Client("wss://colyseus.stateofthe.cards");
 
 			if (user) {
 				UserSingleton.getInstance()?.setUserInfo({

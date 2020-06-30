@@ -78,3 +78,25 @@
 .optionsOverlay > div > button {
 	margin-bottom: 15px;
 }
+
+/*------------------------------------------------Cards------------------------------------------------*/
+@media only screen and (max-height: 900px) {
+	.resizeable > div > figure {
+		width: 22vh;
+		height: 35vh;
+	}
+}
+
+@media only screen and (max-height: 500px) {
+	.resizeable > div > figure {
+		width: 19vh;
+		height: 30vh;
+	}
+}
+
+@media only screen and (max-height: 350px) {
+	.resizeable > div > figure {
+		width: 16vh;
+		height: 27vh;
+	}
+}

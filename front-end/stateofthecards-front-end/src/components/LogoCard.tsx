@@ -13,8 +13,15 @@ interface IProps {
 
 const LogoCard: FunctionComponent<IProps> = (props: IProps) => {
 	const [favorite, setFavorite] = useState(false);
+	const [isProcessingFavorite, setIsProcessingFavorite] = useState(false);
 
 	const onClickFavorite = () => {
+		if (isProcessingFavorite) {
+			return;
+		} else {
+			setIsProcessingFavorite(true);
+		}
+
 		if (favorite) {
 			// remove this card from the favorites
 			const userUid = UserSingleton.getInstance().getUserInfo()
@@ -25,6 +32,7 @@ const LogoCard: FunctionComponent<IProps> = (props: IProps) => {
 				.remove()
 				.then(() => {
 					setFavorite(false);
+					setIsProcessingFavorite(false);
 				});
 		} else {
 			// Add this card to the favorites
@@ -35,11 +43,14 @@ const LogoCard: FunctionComponent<IProps> = (props: IProps) => {
 				.ref("users/" + userUid + "/favorites/" + props.game.identifier)
 				.set({ gameName: props.game.name }, () => {
 					setFavorite(true);
+					setIsProcessingFavorite(false);
 				});
 		}
 	};
 
 	const doFavoriteCheck = async () => {
+		if (isProcessingFavorite) return;
+
 		const userUid = UserSingleton.getInstance().getUserInfo().firebaseUser
 			?.uid;
 
@@ -80,7 +91,7 @@ const LogoCard: FunctionComponent<IProps> = (props: IProps) => {
 					<figcaption>{info}</figcaption>
 					{!props.hideFavorite && (
 						<img
-							alt=""
+							alt="Favorite"
 							onClick={() => {
 								onClickFavorite();
 							}}

@@ -34,7 +34,7 @@ gameServer.define("quick_game_room", QuickGameRoom).enableRealtimeListing();
 // app.use("/", socialRoutes);
 
 // register colyseus monitor
-app.use("/colyseus", monitor());
+// app.use("/colyseus", monitor());
 
 // start game server
 gameServer.listen(port);

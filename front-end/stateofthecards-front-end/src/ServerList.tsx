@@ -182,7 +182,7 @@ class ServerList extends Component<IProps, IState> {
 
 		let gamesFiltered = this.state.games;
 		if (this.state.showFriendsOnly) {
-			this.state.games.filter((value, index) => {
+			gamesFiltered = this.state.games.filter((value, index) => {
 				for (let i = 0; i < this.state.friends.length; i++) {
 					if (
 						value.metadata.hostFirebaseUID === this.state.friends[i]
@@ -265,7 +265,7 @@ class ServerList extends Component<IProps, IState> {
 							checked={this.state.showUnlockedOnly}
 							onChange={this.handlePasswordCheckbox}
 						/>
-						<p>Hide password proteced</p>
+						<p>Hide password protected</p>
 					</div>
 				</div>
 

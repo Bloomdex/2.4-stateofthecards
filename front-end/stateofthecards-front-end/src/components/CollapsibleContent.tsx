@@ -11,10 +11,6 @@ interface IProps {
 
 interface IState {
 	name: string;
-	children: React.ReactElement[];
-	cssClass: string;
-	cssClassHeader: string;
-	cssClassContent: string;
 	isCollapsed: boolean;
 }
 
@@ -24,10 +20,6 @@ class MenuCard extends Component<IProps, IState> {
 
 		this.state = {
 			name: props.name,
-			children: props.children,
-			cssClass: props.cssClass,
-			cssClassHeader: props.cssClassHeader,
-			cssClassContent: props.cssClassContent,
 			isCollapsed: props.isCollapsed,
 		};
 	}
@@ -46,9 +38,9 @@ class MenuCard extends Component<IProps, IState> {
 
 	render() {
 		return (
-			<div className={this.state.cssClass}>
+			<div className={this.props.cssClass}>
 				<div
-					className={this.state.cssClassHeader}
+					className={this.props.cssClassHeader}
 					onClick={() => {
 						this.flipIsCollapsed();
 					}}
@@ -57,12 +49,12 @@ class MenuCard extends Component<IProps, IState> {
 				</div>
 
 				<div
-					className={this.state.cssClassContent}
+					className={this.props.cssClassContent}
 					style={{
 						display: this.state.isCollapsed ? "none" : "block",
 					}}
 				>
-					{this.state.children}
+					{this.props.children}
 				</div>
 			</div>
 		);

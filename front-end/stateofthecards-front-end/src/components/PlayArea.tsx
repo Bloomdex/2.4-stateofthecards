@@ -42,12 +42,14 @@ const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 		room?.state.playerIndices[room?.sessionId]
 	]?.map((card: any, index) => {
 		return (
-			<InteractableCard
-				key={index}
-				card={card}
-				disabled={!checkCardPossiblePlay(card)}
-				onClickCard={() => selectPlayCard(index)}
-			/>
+			<div className={styles.resizeable}>
+				<InteractableCard
+					key={index}
+					card={card}
+					disabled={!checkCardPossiblePlay(card)}
+					onClickCard={() => selectPlayCard(index)}
+				/>
+			</div>
 		);
 	});
 
@@ -142,11 +144,11 @@ const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 			</div>
 
 			<div className={styles.playedCardsArea}>
-				<div className={styles.dropArea}>
+				<div className={styles.resizeable}>
 					<InteractableCard key={"c1"} card={topCard} />
 				</div>
 
-				<div>
+				<div className={styles.resizeable}>
 					<InteractableCard
 						key={"c2"}
 						card={{
@@ -189,6 +191,7 @@ const PlayArea: FunctionComponent<{ gameState: RootState }> = ({
 											}
 											key={index}
 											onClick={() => {
+												console.log(action);
 												room?.send(
 													"performAction",
 													action

@@ -1,18 +1,18 @@
-import React, { useState, Component } from "react";
+import React, { Component } from "react";
 import styles from "./CreateGameScreen.module.css";
 import stylesB from "./Base.module.css";
 import UserSingleton from "./config/UserSingleton";
 import CollapsibleContent from "./components/CollapsibleContent";
 import IGameInfo from "./structures/IGameInfo";
 import GameRules from "stateofthecards-gamelib/dist/src/GameRules";
+import { EffectType } from "stateofthecards-gamelib/dist/src/effects";
 import FirebaseApp from "./config/Firebase";
 import { Redirect } from "react-router-dom";
-import Slider, { Range, createSliderWithTooltip } from "rc-slider";
+import Slider, { Range } from "rc-slider";
 import "rc-slider/assets/index.css";
 import LogoCard from "./components/LogoCard";
 import InteractableCard from "./components/InteractableCard";
 import { ImageUpload } from "./components/ImageUpload";
-import { Card } from "stateofthecards-gamelib/dist/src/Card";
 import FullscreenMessageOverlay from "./components/FullscreenMessageOverlay";
 import CardWithInfo from "./structures/CardWithInfo";
 import { v4 as uuid } from "uuid";
@@ -32,6 +32,11 @@ interface IState {
 
 	overlayMessage?: string;
 	overlaySubMessage?: string;
+
+	errorMessages: {
+		gameSettings?: string;
+		cardSettings?: string;
+	};
 }
 
 class CreateGameScreen extends Component<IProps, IState> {
@@ -41,7 +46,12 @@ class CreateGameScreen extends Component<IProps, IState> {
 		this.state = {
 			goBack: false,
 			currentSelectedCard: undefined,
+
 			overlayMessage: undefined,
+			errorMessages: {
+				gameSettings: undefined,
+				cardSettings: undefined,
+			},
 		};
 	}
 
@@ -192,7 +202,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 		const gameInfo: IGameInfo = {
 			identifier: snapshot.key,
 			minPlayers: 2,
-			maxPlayers: 4,
+			maxPlayers: 2,
 			name: "My New Game",
 			description: "Put a description for My New Game here.",
 			cardLogo:
@@ -204,8 +214,8 @@ class CreateGameScreen extends Component<IProps, IState> {
 		const gameRules: GameRules = {
 			cards: [],
 			minPlayers: 2,
-			maxPlayers: 4,
-			startingCards: 5,
+			maxPlayers: 2,
+			startingCards: 1,
 		};
 
 		const gameModel: gameModel = {
@@ -247,6 +257,33 @@ class CreateGameScreen extends Component<IProps, IState> {
 	}
 
 	// endregion
+
+	setErrorMessageIfInvalidRules() {
+		const model = this.state.currentGameModel;
+		if (
+			model !== undefined &&
+			model.gameRules.maxPlayers !== undefined &&
+			model.gameRules.cards !== undefined
+		) {
+			const maxPerPlayerCardCount =
+				model.gameRules.cards.length / model.gameRules.maxPlayers;
+			const currentHandoutCount = model.gameRules.startingCards;
+
+			let newErrorMessage = "";
+			if (currentHandoutCount > maxPerPlayerCardCount) {
+				const messages = this.state.errorMessages;
+				messages.gameSettings =
+					"Not enough cards for initial handout,\neither decrease the maximum players,\nincrease the amount of cards\nor decrease the initial hand card count.";
+				this.setState({
+					errorMessages: messages,
+				});
+			} else {
+				const messages = this.state.errorMessages;
+				messages.gameSettings = undefined;
+				this.setState({ errorMessages: messages });
+			}
+		}
+	}
 
 	// region Render methods
 	render() {
@@ -335,9 +372,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 					>
 						Back
 					</button>
-				</div>
 
-				<div className={stylesB.buttonWrapper}>
 					<button
 						className={
 							stylesB.buttonBase +
@@ -350,9 +385,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 					>
 						Save game
 					</button>
-				</div>
 
-				<div className={stylesB.buttonWrapper}>
 					<button
 						className={
 							stylesB.buttonBase +
@@ -538,6 +571,63 @@ class CreateGameScreen extends Component<IProps, IState> {
 		);
 	}
 
+	renderPlayerSettingsSlider(rangeProps: any, sliderProps: any) {
+		return [
+			<div key="players">
+				<p>Players:</p>
+			</div>,
+			<div key="playersSlider" className={styles.rangeSliderWrapper}>
+				<Range
+					{...rangeProps}
+					onChange={(value) => {
+						const currentModel = this.state.currentGameModel;
+						if (currentModel) {
+							currentModel.gameInfo.minPlayers = value[0];
+							currentModel.gameInfo.maxPlayers = value[1];
+
+							currentModel.gameRules.minPlayers = value[0];
+							currentModel.gameRules.maxPlayers = value[1];
+
+							this.setState(
+								{
+									currentGameModel: currentModel,
+								},
+								() => {
+									this.setErrorMessageIfInvalidRules();
+								}
+							);
+						}
+					}}
+				/>
+			</div>,
+
+			<div key="handouts">
+				<p>Initial hand card count:</p>
+			</div>,
+			<div key="handoutSlider" className={styles.rangeSliderWrapper}>
+				<Slider
+					{...sliderProps}
+					onChange={(value) => {
+						const currentModel = this.state.currentGameModel;
+
+						if (currentModel) {
+							currentModel.gameRules.startingCards = value;
+
+							this.setState(
+								{
+									currentGameModel: currentModel,
+								},
+								() => {
+									this.setErrorMessageIfInvalidRules();
+								}
+							);
+						}
+					}}
+				/>
+			</div>,
+		];
+	}
+
 	renderCardSettingsPanel(currentCardIdx?: number) {
 		const minPlayers = 2;
 		const maxPlayers = 16;
@@ -554,6 +644,25 @@ class CreateGameScreen extends Component<IProps, IState> {
 			  ]
 			: [2, 8];
 
+		let maxHandCards = 1;
+		let defaultHandoutCount = 1;
+		if (
+			this.state.currentGameModel !== undefined &&
+			this.state.currentGameModel?.gameRules.cards !== undefined
+		) {
+			maxHandCards =
+				this.state.currentGameModel?.gameRules.cards.length /
+				this.state.currentGameModel?.gameInfo.maxPlayers;
+
+			defaultHandoutCount = this.state.currentGameModel.gameRules
+				.startingCards;
+		}
+
+		let sliderMarkers = {};
+		for (let i = 1; i <= 12; i++) {
+			sliderMarkers = { ...sliderMarkers, [i]: i };
+		}
+
 		const rangeProps = {
 			min: 2.0,
 			max: 16.0,
@@ -563,26 +672,29 @@ class CreateGameScreen extends Component<IProps, IState> {
 			marks: markers,
 		};
 
-		let maxHandCards = 1;
-		if (
-			this.state.currentGameModel !== undefined &&
-			this.state.currentGameModel?.gameRules.cards !== undefined
-		)
-			maxHandCards =
-				this.state.currentGameModel?.gameRules.cards.length /
-				this.state.currentGameModel?.gameInfo.maxPlayers;
-
-		let sliderMarkers = {};
-		for (let i = 1; i <= maxHandCards; i++) {
-			sliderMarkers = { ...sliderMarkers, [i]: i };
-		}
-
 		const sliderProps = {
 			min: 1,
 			step: 1,
-			max: maxHandCards,
+			defaultValue: defaultHandoutCount,
+			max: 12,
 			marks: sliderMarkers,
 		};
+
+		let valueSliders = this.renderPlayerSettingsSlider(
+			rangeProps,
+			sliderProps
+		);
+
+		if (
+			this.state.currentGameModel !== undefined &&
+			this.state.currentGameModel.gameRules !== undefined &&
+			(this.state.currentGameModel?.gameRules.cards === undefined ||
+				this.state.currentGameModel?.gameRules.cards.length < 4)
+		) {
+			const message = this.state.errorMessages;
+			message.gameSettings = "Create atleast 4 cards!";
+			valueSliders = [];
+		}
 
 		let currentCard: CardWithInfo | undefined = undefined;
 		if (currentCardIdx !== undefined)
@@ -599,6 +711,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 				}
 			>
 				<CollapsibleContent
+					key="gs"
 					name="Game settings"
 					cssClass=""
 					cssClassHeader={stylesB.collapsibleHeader}
@@ -611,7 +724,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 				>
 					<div
 						className={
-							stylesB.collapsibleContentWrapper +
+							stylesB.collapsibleContent +
 							" " +
 							styles.gameSettings
 						}
@@ -621,6 +734,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 						</div>
 						<div>
 							<input
+								className={stylesB.input}
 								defaultValue={
 									this.state.currentGameModel?.gameInfo.name
 								}
@@ -636,6 +750,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 						</div>
 						<div>
 							<textarea
+								className={stylesB.input}
 								defaultValue={
 									this.state.currentGameModel?.gameInfo
 										.description
@@ -650,7 +765,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 						<div>
 							<p>Logo:</p>
 						</div>
-						<div>
+						<div className={styles.imageUploadWrapper}>
 							{this.state.currentGameModel?.gameInfo
 								.identifier && (
 								<ImageUpload
@@ -682,38 +797,13 @@ class CreateGameScreen extends Component<IProps, IState> {
 							)}
 						</div>
 
-						<div>
-							<p>Players:</p>
-						</div>
-						<div className={styles.rangeSliderWrapper}>
-							<Range
-								{...rangeProps}
-								onChange={(value) => {
-									const currentModel = this.state
-										.currentGameModel;
-									if (currentModel) {
-										currentModel.gameInfo.minPlayers =
-											value[0];
-										currentModel.gameInfo.maxPlayers =
-											value[1];
+						{valueSliders}
 
-										currentModel.gameRules.minPlayers =
-											value[0];
-										currentModel.gameRules.maxPlayers =
-											value[1];
-
-										this.setState({
-											currentGameModel: currentModel,
-										});
-									}
-								}}
-							/>
-						</div>
-						<div>
-							<p>Initial hand card count:</p>
-						</div>
-						<div>
-							<Slider {...sliderProps} />
+						<div />
+						<div className={styles.gameSettingsErrorWrapper}>
+							<p className={stylesB.error}>
+								{this.state.errorMessages.gameSettings}
+							</p>
 						</div>
 					</div>
 					<div
@@ -743,6 +833,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 
 				{currentCardIdx !== undefined && (
 					<CollapsibleContent
+						key="cs"
 						name="Card settings"
 						cssClass=""
 						cssClassHeader={stylesB.collapsibleHeader}
@@ -750,7 +841,8 @@ class CreateGameScreen extends Component<IProps, IState> {
 						isCollapsed={false}
 					>
 						<CollapsibleContent
-							name="Card design"
+							key="cso"
+							name="Card options"
 							cssClass=""
 							cssClassHeader={stylesB.collapsibleHeader}
 							cssClassContent={stylesB.collapsibleContent}
@@ -762,6 +854,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 								</div>
 								<div>
 									<input
+										className={stylesB.input}
 										defaultValue={
 											currentCard ? currentCard.name : ""
 										}
@@ -777,7 +870,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 								<div>
 									<p>Card graphics:</p>
 								</div>
-								<div>
+								<div className={styles.imageUploadWrapper}>
 									{this.state.currentGameModel?.gameInfo
 										.identifier && (
 										<ImageUpload
@@ -831,15 +924,79 @@ class CreateGameScreen extends Component<IProps, IState> {
 						</CollapsibleContent>
 
 						<CollapsibleContent
-							name="Card effects"
+							key="cst"
+							name="Card tags"
 							cssClass=""
 							cssClassHeader={stylesB.collapsibleHeader}
 							cssClassContent={stylesB.collapsibleContent}
 							isCollapsed={false}
 						>
-							<div>
-								<p>Effect:</p>
+							<div className={styles.cardTagListWrapper}>
+								{currentCard?.tags.map((tag, index) => {
+									return (
+										<div
+											key={"tag-" + index}
+											className={styles.cardTagEntry}
+										>
+											<img
+												src={"icons/remove-icon.svg"}
+												className={styles.icon}
+												alt="Remove"
+												onClick={() => {
+													this.handleCardSettingTagRemove(
+														currentCardIdx,
+														index
+													);
+												}}
+											></img>
+											<input
+												className={stylesB.input}
+												value={tag}
+												onChange={(e) => {
+													this.handleCardSettingTagChange(
+														e.target.value,
+														currentCardIdx,
+														index
+													);
+												}}
+											/>
+										</div>
+									);
+								})}
+
+								<div className={stylesB.buttonWrapper}>
+									<button
+										className={
+											stylesB.buttonBase +
+											" " +
+											stylesB.buttonFilledPrimary
+										}
+										onClick={() => {
+											this.handleCardSettingTagChange(
+												"",
+												currentCardIdx
+											);
+										}}
+									>
+										Add tag
+									</button>
+								</div>
 							</div>
+							<div />
+						</CollapsibleContent>
+
+						<CollapsibleContent
+							key="cse"
+							name="Card effect"
+							cssClass=""
+							cssClassHeader={stylesB.collapsibleHeader}
+							cssClassContent={stylesB.collapsibleContent}
+							isCollapsed={false}
+						>
+							{this.renderCardEffectSettings(
+								currentCard,
+								currentCardIdx
+							)}
 							<div />
 						</CollapsibleContent>
 
@@ -860,6 +1017,248 @@ class CreateGameScreen extends Component<IProps, IState> {
 							</div>
 						</div>
 					</CollapsibleContent>
+				)}
+			</div>
+		);
+	}
+
+	renderCardEffectSettings(
+		currentCard: CardWithInfo | undefined,
+		currentCardIdx: number
+	) {
+		if (!currentCard) return <div />;
+
+		function effectTypeEnumKeys<EffectType>(
+			e: EffectType
+		): (keyof EffectType)[] {
+			return Object.keys(e) as (keyof EffectType)[];
+		}
+
+		function effectTypeEnumValues<EffectType>(
+			e: EffectType
+		): (keyof EffectType)[] {
+			return Object.values(e) as (keyof EffectType)[];
+		}
+
+		const effectSelected =
+			currentCard !== undefined &&
+			currentCard.effects !== undefined &&
+			currentCard.effects.length === 1;
+
+		const handleSetting = (
+			type: string,
+			event: React.ChangeEvent<HTMLInputElement>,
+			currentCardIdx: number
+		) => {
+			if (
+				this.state.currentGameModel === undefined ||
+				currentCard.effects === undefined ||
+				currentCard.effects.length < 1
+			)
+				return;
+
+			switch (currentCard.effects[0].type) {
+				case "TURN_MODIFIER":
+					if (currentCard.effects !== undefined) {
+						currentCard.effects[0].turns = Number(
+							event.target.value
+						);
+					}
+					break;
+				case "DRAW_CARD":
+					if (currentCard.effects !== undefined) {
+						currentCard.effects[0].cards = Number(
+							event.target.value
+						);
+					}
+					break;
+				case "PASS_HANDS_ALONG":
+					if (currentCard.effects !== undefined) {
+						currentCard.effects[0].steps = Number(
+							event.target.value
+						);
+					}
+					break;
+				case "TAG_OVERRIDE":
+					/*if (
+						currentCard.effects !== undefined &&
+						currentCard.effects[0].override !== undefined
+					) {
+						currentCard.effects[0].override = [
+							event.target.value,
+							"uniqueEI_DEE",
+						];
+					}*/
+					break;
+			}
+
+			this.handleCardSetting(currentCard, currentCardIdx);
+		};
+
+		let extraEffectOptions;
+		if (currentCard.effects !== undefined && effectSelected) {
+			switch (currentCard.effects[0].type) {
+				case "TURN_MODIFIER":
+					extraEffectOptions = (
+						<div>
+							<p>Turns:</p>
+							<input
+								className={stylesB.input}
+								type="number"
+								value={
+									currentCard.effects[0].turns
+										? currentCard.effects[0].turns
+										: 0
+								}
+								onChange={(e) => {
+									if (
+										currentCard !== undefined &&
+										currentCard.effects
+									) {
+										handleSetting(
+											currentCard.effects[0].type,
+											e,
+											currentCardIdx
+										);
+									}
+								}}
+								min="-15"
+								max="+15"
+							/>
+						</div>
+					);
+					break;
+				case "DRAW_CARD":
+					extraEffectOptions = (
+						<div>
+							<p>Amount:</p>
+							<input
+								className={stylesB.input}
+								type="number"
+								value={
+									currentCard.effects[0].cards
+										? currentCard.effects[0].cards
+										: 0
+								}
+								onChange={(e) => {
+									if (
+										currentCard !== undefined &&
+										currentCard.effects
+									) {
+										handleSetting(
+											currentCard.effects[0].type,
+											e,
+											currentCardIdx
+										);
+									}
+								}}
+								min="0"
+								max="+30"
+							/>
+						</div>
+					);
+					break;
+				case "PASS_HANDS_ALONG":
+					extraEffectOptions = (
+						<div>
+							<p>Steps:</p>
+							<input
+								className={stylesB.input}
+								type="number"
+								value={
+									currentCard.effects[0].steps
+										? currentCard.effects[0].steps
+										: 0
+								}
+								onChange={(e) => {
+									if (
+										currentCard !== undefined &&
+										currentCard.effects
+									) {
+										handleSetting(
+											currentCard.effects[0].type,
+											e,
+											currentCardIdx
+										);
+									}
+								}}
+								min="-15"
+								max="+15"
+							/>
+						</div>
+					);
+					break;
+				case "TAG_OVERRIDE":
+					extraEffectOptions = (
+						<div>
+							<p>Tag:</p>
+							<input
+								className={stylesB.input}
+								type="number"
+								value={
+									currentCard.effects[0].override &&
+									currentCard.effects[0].override[0]
+										? currentCard.effects[0].override[0]
+										: 1
+								}
+								onChange={(e) => {
+									if (
+										currentCard !== undefined &&
+										currentCard.effects
+									) {
+										handleSetting(
+											currentCard.effects[0].type,
+											e,
+											currentCardIdx
+										);
+									}
+								}}
+								min="1"
+							/>
+						</div>
+					);
+					break;
+			}
+		}
+
+		return (
+			<div className={styles.cardEffectsWrapper}>
+				<div>
+					<p>Effect type:</p>
+					<select
+						className={stylesB.input}
+						name="options"
+						id="options"
+						value={
+							currentCard.effects && effectSelected
+								? currentCard?.effects[0]?.type
+								: "none"
+						}
+						onChange={(e) => {
+							this.handleCardSettingEffectChange(
+								e,
+								currentCardIdx
+							);
+						}}
+					>
+						<option value="NONE">NONE</option>
+
+						{effectTypeEnumValues(EffectType).map(
+							(value, index) => {
+								return (
+									<option key={index} value={value}>
+										{value}
+									</option>
+								);
+							}
+						)}
+					</select>
+				</div>
+
+				{currentCard.effects && effectSelected ? (
+					extraEffectOptions
+				) : (
+					<div />
 				)}
 			</div>
 		);
@@ -900,11 +1299,24 @@ class CreateGameScreen extends Component<IProps, IState> {
 
 	publishCurrentGame() {
 		if (this.state.currentGameModel) {
-			this.publishGameModel(this.state.currentGameModel);
-			this.setState({
-				overlayMessage: `Succesfully (re)published ${this.state.currentGameModel.gameInfo.name}!`,
-				overlaySubMessage: `The game is now playable when creating a new match.`,
-			});
+			this.setErrorMessageIfInvalidRules();
+
+			if (
+				this.state.errorMessages.gameSettings !== undefined ||
+				this.state.errorMessages.cardSettings !== undefined
+			) {
+				this.setState({
+					overlayMessage: "Failed to publish because of a mistake!",
+					overlaySubMessage:
+						"You probably made a mistake in the game settings, check for error messages in your settings.",
+				});
+			} else {
+				this.publishGameModel(this.state.currentGameModel);
+				this.setState({
+					overlayMessage: `Succesfully (re)published ${this.state.currentGameModel.gameInfo.name}!`,
+					overlaySubMessage: `The game is now playable when creating a new match.`,
+				});
+			}
 		}
 	}
 
@@ -946,6 +1358,7 @@ class CreateGameScreen extends Component<IProps, IState> {
 				currentSelectedCard: undefined,
 			},
 			() => {
+				this.setErrorMessageIfInvalidRules();
 				this.setState({
 					currentSelectedCard: gameModel.gameRules.cards.length - 1,
 				});
@@ -1015,10 +1428,73 @@ class CreateGameScreen extends Component<IProps, IState> {
 		const card = this.state.currentGameModel.gameRules.cards[
 			currentCardIdx
 		] as CardWithInfo;
+
 		card.name = event.target.value;
+
+		this.handleCardSetting(card, currentCardIdx);
+	}
+
+	handleCardSettingTagChange(
+		value: string,
+		currentCardIdx: number,
+		tagIdx?: number
+	) {
+		if (!this.state.currentGameModel) return;
+
+		const card = this.state.currentGameModel.gameRules.cards[
+			currentCardIdx
+		] as CardWithInfo;
+
+		if (tagIdx === undefined) {
+			card.tags.push(value);
+		} else {
+			card.tags[tagIdx] = value;
+		}
+
+		this.handleCardSetting(card, currentCardIdx);
+	}
+
+	handleCardSettingTagRemove(currentCardIdx: number, tagIdx: number) {
+		if (!this.state.currentGameModel) return;
+
+		const card = this.state.currentGameModel.gameRules.cards[
+			currentCardIdx
+		] as CardWithInfo;
+
+		card.tags.splice(tagIdx, 1);
+
+		this.handleCardSetting(card, currentCardIdx);
+	}
+
+	handleCardSettingEffectChange(
+		event: React.ChangeEvent<HTMLSelectElement>,
+		currentCardIdx: number
+	) {
+		if (!this.state.currentGameModel) return;
+
+		const card = this.state.currentGameModel.gameRules.cards[
+			currentCardIdx
+		] as CardWithInfo;
+
+		const type: any = event.target.value;
+
+		card.effects = [];
+
+		if (type !== "NONE") {
+			card.effects.push({ type: type });
+		}
+
+		this.handleCardSetting(card, currentCardIdx);
+	}
+
+	handleCardSetting(card: CardWithInfo, currentCardIdx: number) {
+		if (!this.state.currentGameModel) return;
+
 		this.state.currentGameModel.gameRules.cards[currentCardIdx] = card;
 
-		this.setState({ currentGameModel: this.state.currentGameModel });
+		this.setState({
+			currentGameModel: this.state.currentGameModel,
+		});
 	}
 	// endregion
 }

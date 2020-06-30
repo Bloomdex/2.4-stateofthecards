@@ -67,11 +67,6 @@ class MatchLobbySettings extends Component<IProps, IState> {
 						isCollapsed={false}
 					>
 						<div className={styles.settings}>
-							<input
-								className={stylesB.input}
-								placeholder="Search..."
-							></input>
-
 							<TabSelection
 								onButtonClicked={(i) => {
 									this.switchTab(i);

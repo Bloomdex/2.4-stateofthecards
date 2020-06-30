@@ -454,7 +454,11 @@ class Dashboard extends Component<IProps, IState> {
 
 						<div
 							className={
-								styles.cardWrapper + " " + stylesMC.hoverable
+								styles.cardWrapper +
+								" " +
+								stylesMC.hoverable +
+								" " +
+								styles.createGameWrapper
 							}
 						>
 							<MenuCard

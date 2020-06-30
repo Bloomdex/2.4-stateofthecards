@@ -26,7 +26,6 @@ enum MatchLobbyState {
 
 enum Tab {
 	Overview,
-	Invite,
 	Settings,
 }
 
@@ -143,8 +142,6 @@ class MatchLobby extends React.Component<IProps, IState> {
 		if (index === 0) {
 			this.setState({ currentTab: Tab.Overview });
 		} else if (index === 1) {
-			this.setState({ currentTab: Tab.Invite });
-		} else if (index === 2) {
 			this.setState({ currentTab: Tab.Settings });
 		}
 	}
@@ -323,7 +320,7 @@ class MatchLobby extends React.Component<IProps, IState> {
 					{this.state.isHost ? (
 						<TabSelection
 							onButtonClicked={(i) => this.switchTab(i)}
-							buttons={["Overview", "Invite", "Settings"]}
+							buttons={["Overview", "Settings"]}
 							cssClass={styles.navButtons}
 							cssButtonWrapperClass={stylesB.buttonWrapper}
 							cssButtonActiveClass={
