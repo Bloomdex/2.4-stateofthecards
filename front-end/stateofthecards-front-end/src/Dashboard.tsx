@@ -1,26 +1,33 @@
 import React, { Component, RefObject, createRef } from "react";
 import styles from "./Dashboard.module.css";
+import stylesB from "./Base.module.css";
+import stylesH from "./components/HeaderBar.module.css";
+import stylesMC from "./components/MenuCard.module.css";
 import MenuCard from "./components/MenuCard";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import QuickJoinMenu from "./components/QuickJoinMenu";
+import AddFriendsMenu from "./components/AddFriendsMenu";
 import { Redirect } from "react-router-dom";
 import HeaderBar from "./components/HeaderBar";
+import FirebaseApp from "./config/Firebase";
+import UserSingleton from "./config/UserSingleton";
+import { Room } from "colyseus.js";
+import QRCode from "qrcode.react";
 
 enum DashBoardState {
 	Idle,
-	RedirectJoinFriends,
 	RedirectServerList,
 	RedirectCreateMatch,
-	RedirectQuickJoin,
 	RedirectCreateGame,
+	RedirectQuickJoin,
 	Logout,
-	Settings,
 }
 
 interface IProps {}
 
 interface IState {
 	currentState: DashBoardState;
+	lobby: any;
 }
 
 class Dashboard extends Component<IProps, IState> {
@@ -33,69 +40,189 @@ class Dashboard extends Component<IProps, IState> {
 
 	// Menu's
 	private quickJoinMenu: RefObject<QuickJoinMenu> = createRef();
+	private addFriendsMenu: RefObject<AddFriendsMenu> = createRef();
 
 	constructor(props: IProps) {
 		super(props);
 
 		this.state = {
 			currentState: DashBoardState.Idle,
+			lobby: undefined,
 		};
 	}
 
 	render() {
+		const currentRoom = UserSingleton.getInstance().getUserInfo()
+			.currentRoom;
+
 		switch (this.state.currentState) {
 			case DashBoardState.Idle:
 				return this.renderDashBoard();
 			case DashBoardState.RedirectServerList:
+				if (currentRoom) {
+					currentRoom.leave();
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: undefined,
+					});
+				}
 				return <Redirect to="/servers"></Redirect>;
+			case DashBoardState.RedirectCreateMatch:
+				return (
+					<Redirect
+						to={
+							"/match?id=" +
+							UserSingleton.getInstance().getUserInfo()
+								.currentRoom?.id
+						}
+					></Redirect>
+				);
+			case DashBoardState.RedirectQuickJoin:
+				return (
+					<Redirect
+						to={`/match?id=${
+							UserSingleton.getInstance().getUserInfo()
+								.currentRoom?.id
+						}`}
+					/>
+				);
+			case DashBoardState.RedirectCreateGame:
+				if (currentRoom) {
+					currentRoom.leave();
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: undefined,
+					});
+				}
+
+				return <Redirect to="/create"></Redirect>;
 			case DashBoardState.Logout:
-				// Add log-out functionality here.
+				// Logout using Firebase
+				if (currentRoom) {
+					currentRoom.leave();
+					UserSingleton.getInstance().setUserInfo({
+						currentRoom: undefined,
+					});
+				}
+				FirebaseApp.auth().signOut();
 				return <Redirect to="/"></Redirect>;
 		}
 	}
 
 	renderDashBoard() {
 		return (
-			<div className={styles.wrapper}>
+			<div
+				className={
+					stylesB.wrapper +
+					" " +
+					stylesB.background +
+					" " +
+					styles.wrapper
+				}
+			>
 				<HeaderBar>
-					<img
-						src="icons/quit-icon-white.svg"
-						alt="logout"
-						onClick={() => {
-							this.setState({
-								currentState: DashBoardState.Logout,
-							});
-						}}
-					></img>
-					<div className={styles.message}>
-						<p>State of the Cards</p>
-						<p>Welcome back SPELER01!</p>
+					<div className={stylesB.buttonWrapper}>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledTertiary
+							}
+							onClick={() => {
+								this.setState({
+									currentState: DashBoardState.Logout,
+								});
+							}}
+						>
+							Logout
+						</button>
 					</div>
-					<img
-						src="icons/settings-icon-white.svg"
-						alt="settings"
-					></img>
+					<div className={styles.infoWrapper}>
+						<p className={stylesH.headerTextLarge}>
+							State of the cards
+						</p>
+						<p className={stylesH.headerTextSmall}>
+							Welcome back
+							{UserSingleton.getInstance()?.getUserInfo()
+								.firebaseUser?.displayName && " "}
+							{
+								UserSingleton.getInstance()?.getUserInfo()
+									.firebaseUser?.displayName
+							}
+							!
+						</p>
+					</div>
+					<div />
 				</HeaderBar>
+
 				<div className={styles.optionsWrapper}>
 					<div className={styles.options}>
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
 								ref={this.joinFriendsCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										this.joinFriendsCard.current?.setNextChild();
+									}}
+								>
 									<img
 										src="icons/join-friends-icon.svg"
 										alt=""
 									></img>
-									<p>Join Friends</p>
+									<p>Add Friends</p>
 								</div>
-								<div></div>
+
+								<AddFriendsMenu
+									onClickCancel={() => {
+										this.joinFriendsCard.current?.setCurrentChild(
+											0
+										);
+									}}
+									onClickQR={() => {
+										this.joinFriendsCard.current?.setNextChild();
+									}}
+								/>
+
+								<div className={styles.QRCodeWrapper}>
+									<QRCode
+										value={
+											"https://stateofthe.cards/dashboard?add_uid=" +
+											UserSingleton.getInstance().getUserInfo()
+												.firebaseUser?.uid
+										}
+									/>
+
+									<div className={stylesB.buttonWrapper}>
+										<button
+											className={
+												stylesB.buttonBase +
+												" " +
+												stylesB.buttonFilledTertiary
+											}
+											onClick={() => {
+												this.joinFriendsCard.current?.setCurrentChild(
+													1
+												);
+											}}
+										>
+											Back
+										</button>
+									</div>
+								</div>
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
@@ -120,24 +247,79 @@ class Dashboard extends Component<IProps, IState> {
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
 								ref={this.createMatchCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										this.createMatchCard.current?.setNextChild();
+
+										const currentRoom = UserSingleton.getInstance().getUserInfo()
+											.currentRoom;
+										if (currentRoom) {
+											currentRoom.leave();
+											UserSingleton.getInstance().setUserInfo(
+												{
+													currentRoom: undefined,
+												}
+											);
+										}
+
+										UserSingleton.getInstance()
+											.getUserInfo()
+											.colyseusClient?.create(
+												"game_room",
+												{
+													playerInfo: {
+														firebaseUID: UserSingleton.getInstance().getUserInfo()
+															.firebaseUser?.uid,
+														username: UserSingleton.getInstance().getUserInfo()
+															.displayName,
+													},
+												}
+											)
+											.then((room: Room<any>) => {
+												UserSingleton.getInstance().setUserInfo(
+													{
+														currentRoom: room,
+													}
+												);
+
+												this.setState({
+													currentState:
+														DashBoardState.RedirectCreateMatch,
+												});
+											})
+											.catch((e) => {
+												console.error("ERROR: ", e);
+											});
+									}}
+								>
 									<img
 										src="icons/create-match-icon.svg"
 										alt=""
 									></img>
 									<p>Create Match</p>
 								</div>
-								<div></div>
+								<div>
+									<ScaleLoader radius={2} color={"#33658a"} />
+								</div>
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper + " " + stylesMC.hoverable
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
@@ -153,45 +335,95 @@ class Dashboard extends Component<IProps, IState> {
 											undefined
 										);
 
-										// Fake searching for a lobby
-										const promise = new Promise((resolve) =>
-											setTimeout(resolve, 1500)
-										);
-
-										// Keep update-ing the lobby-info
-										//  Until a game starts.
-										promise.then(() => {
-											this.quickJoinMenu.current?.setLobbyInfo(
+										UserSingleton.getInstance()
+											?.getUserInfo()
+											?.colyseusClient?.joinOrCreate(
+												"quick_game_room",
 												{
-													lobbyId: 0,
-													lobbyName:
-														"QuickJoinLobby01",
-													passwordProtected: false,
-													players: [
-														"Appa",
-														"Momo",
-														"Zuko",
-														"Sokka",
-														"Katara",
-														"Iroh",
-														"Zhao",
-														"Ozai",
-														"Toph",
-														"Aang",
-														"Cabbage Merchant",
-														"King Boomi",
-														"Zuki",
-													],
-													gameInfo: {
-														minPlayers: 2,
-														maxPlayers: 6,
-														name: "Blackjack",
+													playerInfo: {
+														firebaseUID: UserSingleton.getInstance().getUserInfo()
+															.firebaseUser?.uid,
+														username: UserSingleton.getInstance().getUserInfo()
+															.displayName,
 													},
-													state:
-														"Waiting for players",
 												}
-											);
-										});
+											)
+											.then((room: Room<any>) => {
+												UserSingleton.getInstance().setUserInfo(
+													{
+														currentRoom: room,
+													}
+												);
+
+												room.onMessage(
+													"startMatch",
+													(message) => {
+														this.setState({
+															currentState:
+																DashBoardState.RedirectQuickJoin,
+														});
+													}
+												);
+
+												room.state.onChange = (
+													changes: any
+												) => {
+													let players = [];
+													for (let key in room.state
+														.players) {
+														players.push(
+															room.state.players[
+																key
+															].username
+														);
+													}
+
+													this.quickJoinMenu.current?.setLobbyInfo(
+														{
+															lobbyId: room.id,
+															lobbyName:
+																room.state
+																	.roomName,
+															passwordProtected: false,
+															players: players,
+															gameInfo: {
+																identifier:
+																	room.state
+																		.gameInfo
+																		.identifier,
+																minPlayers:
+																	room.state
+																		.gameInfo
+																		.minPlayers,
+																maxPlayers:
+																	room.state
+																		.gameInfo
+																		.maxPlayers,
+																name:
+																	room.state
+																		.gameInfo
+																		.name,
+																description:
+																	room.state
+																		.gameInfo
+																		.description,
+																cardLogo:
+																	room.state
+																		.gameInfo
+																		.cardLogo,
+																color:
+																	room.state
+																		.gameInfo
+																		.color,
+																author:
+																	room.state
+																		.gameInfo
+																		.author,
+															},
+														}
+													);
+												};
+											});
 									}}
 								>
 									<img
@@ -210,6 +442,9 @@ class Dashboard extends Component<IProps, IState> {
 									<QuickJoinMenu
 										ref={this.quickJoinMenu}
 										onClickCancel={() => {
+											UserSingleton.getInstance()
+												.getUserInfo()
+												.currentRoom?.leave();
 											this.quickJoinCard.current?.setNextChild();
 										}}
 									></QuickJoinMenu>
@@ -217,13 +452,29 @@ class Dashboard extends Component<IProps, IState> {
 							</MenuCard>
 						</div>
 
-						<div className={styles.cardWrapper}>
+						<div
+							className={
+								styles.cardWrapper +
+								" " +
+								stylesMC.hoverable +
+								" " +
+								styles.createGameWrapper
+							}
+						>
 							<MenuCard
 								cssClass={styles.card}
 								currentChild={0}
 								ref={this.createGameCard}
 							>
-								<div className={styles.cardContent}>
+								<div
+									className={styles.cardContent}
+									onClick={() => {
+										this.setState({
+											currentState:
+												DashBoardState.RedirectCreateGame,
+										});
+									}}
+								>
 									<img
 										src="icons/create-game-icon.svg"
 										alt=""

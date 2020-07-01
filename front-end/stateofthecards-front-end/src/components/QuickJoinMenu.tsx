@@ -1,5 +1,6 @@
 import React from "react";
 import styles from "./QuickJoinMenu.module.css";
+import stylesB from "../Base.module.css";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import ILobbyInfo from "../structures/ILobbyInfo";
 
@@ -67,13 +68,20 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 						<p>Looking for match...</p>
 					</div>
 					<ScaleLoader radius={2} color={"#33658a"} />
-					<img
-						src="icons/quit-icon.svg"
-						alt="Leave"
-						onClick={() => {
-							this.onClickCancel();
-						}}
-					/>
+					<div className={stylesB.buttonWrapper}>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledTertiary
+							}
+							onClick={() => {
+								this.onClickCancel();
+							}}
+						>
+							Leave
+						</button>
+					</div>
 				</div>
 			</div>
 		);
@@ -86,7 +94,7 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 					<div className={styles.gameInfo}>
 						<p>{this.state.lobbyInfo?.gameInfo.name}</p>
 						<p>
-							{this.state.lobbyInfo?.state} (
+							Waiting for players... (
 							{this.state.lobbyInfo?.players.length}/
 							{this.state.lobbyInfo?.gameInfo.maxPlayers})
 						</p>
@@ -104,14 +112,20 @@ class QuickJoinMenu extends React.Component<IProps, IState> {
 							</tbody>
 						</table>
 					</div>
-					<img
-						className={styles.quitIcon}
-						src="icons/quit-icon.svg"
-						alt="Leave"
-						onClick={() => {
-							this.onClickCancel();
-						}}
-					/>
+					<div className={stylesB.buttonWrapper}>
+						<button
+							className={
+								stylesB.buttonBase +
+								" " +
+								stylesB.buttonFilledTertiary
+							}
+							onClick={() => {
+								this.onClickCancel();
+							}}
+						>
+							Leave
+						</button>
+					</div>
 				</div>
 			</div>
 		);

@@ -16,11 +16,17 @@
 			"src": "logo512.png",
 			"type": "image/png",
 			"sizes": "512x512"
+		},
+		{
+			"src": "maskable_icon.png",
+			"type": "image/png",
+			"sizes": "731x731",
+			"purpose": "maskable"
 		}
 	],
 	"start_url": ".",
 	"display": "standalone",
-	"theme_color": "#00a0eb",
-	"background_color": "#00a0eb",
+	"theme_color": "#4282b3",
+	"background_color": "#4282b3",
 	"orientation": "landscape"
 }

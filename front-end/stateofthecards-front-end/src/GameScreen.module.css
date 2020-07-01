@@ -1,0 +1,81 @@
+/*------------------------------------------------Floating button------------------------------------------------*/
+.floatingButtonWrapper {
+	margin: 10px;
+	position: fixed;
+	display: inline-block;
+	z-index: 200;
+}
+
+.floatingButtonWrapper > button {
+	display: block;
+}
+
+/*------------------------------------------------Side panel------------------------------------------------*/
+.sidePanelClosed {
+	transform: translateX(-100%);
+}
+
+.sidePanelOpen {
+	transform: translateX(0%);
+}
+
+.sidePanel {
+	width: 40%;
+	overflow-x: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	background-color: rgba(0, 0, 0, 0.7);
+	transition: 0.5s;
+	z-index: 1;
+	padding: 10px;
+	padding-top: 35px;
+}
+
+.serverInfo {
+	color: white;
+	margin-top: 15px;
+}
+
+.serverInfo h1,
+.serverInfo h2 {
+	margin: 0;
+	padding: 0;
+}
+
+.playerList {
+	margin: 15px 0px;
+	flex-grow: 1;
+	overflow-y: auto;
+}
+
+.playerList h1 {
+	color: #ffffff;
+	margin: 0;
+	padding: 0;
+}
+
+.playerList > div {
+	margin-top: 5px;
+	flex-grow: 1;
+	overflow-y: auto;
+}
+
+/*------------------------------------------------Game screen------------------------------------------------*/
+.gameScreen {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+
+/*------------------------------------------------Action panel------------------------------------------------*/
+.actionPanel {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.actionPanel > button {
+	margin: 10px;
+}

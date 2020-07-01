@@ -1,40 +1,47 @@
 import React from "react";
+import stylesLE from "./BasicListEntry.module.css";
 import styles from "./ServerListEntry.module.css";
-import ILobbyInfo from "../structures/ILobbyInfo";
+import UserSingleton from "../config/UserSingleton";
+import { Room } from "colyseus.js";
+import { Redirect } from "react-router-dom";
 
 interface IProps {
-	lobbyInfo: ILobbyInfo;
+	roomId: string;
+	iconUrl: string;
+	serverName: string;
+	gameName: string;
+	playerCount: number;
+	maxPlayerCount: number;
+	onJoinPressed: (roomId: string) => void;
 }
 
-interface IState {
-	lobbyInfo: ILobbyInfo;
-}
+interface IState {}
 
 class ServerListEntry extends React.Component<IProps, IState> {
 	constructor(props: IProps) {
 		super(props);
-
-		this.state = {
-			lobbyInfo: this.props.lobbyInfo,
-		};
 	}
 
 	render() {
 		return (
-			<div className={styles.entry}>
-				<div className={styles.serverInfo}>
-					<img src="icons/open-match-icon.svg" alt="State" />
-					<p>{this.props.lobbyInfo.lobbyName}</p>
+			<div
+				className={stylesLE.entry + " " + styles.entry}
+				onClick={() => {
+					this.props.onJoinPressed(this.props.roomId);
+				}}
+			>
+				<div className={stylesLE.leftInfo}>
+					<img src={this.props.iconUrl} alt="State" />
+					<p>{this.props.serverName}</p>
 				</div>
 
 				<div className={styles.gameInfo}>
-					<p>{this.props.lobbyInfo.gameInfo.name}</p>
+					<p>{this.props.gameName}</p>
 				</div>
 
-				<div className={styles.joinInfo}>
+				<div className={stylesLE.rightInfo}>
 					<p>
-						{this.props.lobbyInfo.players.length}/
-						{this.props.lobbyInfo.gameInfo.maxPlayers}
+						{this.props.playerCount}/{this.props.maxPlayerCount}
 					</p>
 					<div className={styles.joinIconsWrapper}>
 						<img src="icons/join-match-icon.svg" alt="Join" />

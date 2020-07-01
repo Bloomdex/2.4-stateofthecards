@@ -1,0 +1,91 @@
+/*------------------------------------------------General------------------------------------------------*/
+.pageWrapper {
+	display: flex;
+	flex-direction: row;
+	overflow: none;
+	height: 100%;
+}
+
+.sidePanel {
+	background-color: #525252;
+	overflow-y: auto;
+	overflow-x: none;
+	display: flex;
+	flex-direction: column;
+	padding: 1vw;
+}
+
+.sidePanel {
+	width: 25vw;
+}
+
+@media only screen and (max-width: 1500px) {
+	.sidePanel {
+		width: 30vw;
+	}
+}
+
+@media only screen and (max-width: 1000px) {
+	.sidePanel {
+		width: 50vw;
+	}
+}
+
+@media only screen and (max-width: 700px) {
+	.sidePanel {
+		width: 80vw;
+	}
+}
+
+@media only screen and (max-width: 500px) {
+	.sidePanel {
+		width: 100vw;
+	}
+}
+
+/*------------------------------------------------Game settings: Collapsable content------------------------------------------------*/
+.settings {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.settings > * {
+	margin-top: 10px;
+	width: 100%;
+}
+
+.settings > .filterButtons {
+	display: flex;
+	flex-direction: column;
+	margin-top: 10px;
+}
+
+.settings > .filterButtons > div > button {
+	margin: 5px 0;
+	width: 100%;
+	border-radius: 0px;
+}
+
+.settings > .filterButtons > div:first-child > button {
+	border-radius: 6px;
+	border-bottom-left-radius: 0;
+	border-bottom-right-radius: 0;
+}
+
+.settings > .filterButtons > div:last-child > button {
+	border-radius: 6px;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+}
+
+/*------------------------------------------------Games collection------------------------------------------------*/
+.gamesCollection {
+	flex-grow: 1;
+
+	display: flex;
+	flex-wrap: wrap;
+	flex-direction: row;
+	overflow-y: auto;
+	justify-content: center;
+}

@@ -1,131 +1,130 @@
-import React, { Component, RefObject, createRef, FormEvent } from "react";
+import React, { Component, RefObject, createRef } from "react";
 import styles from "./Login.module.css";
+import stylesB from "./Base.module.css";
 import { Redirect } from "react-router-dom";
 import ScaleLoader from "react-spinners/ScaleLoader";
 import MenuCard from "./components/MenuCard";
+import FirebaseApp from "./config/Firebase";
+import LoginForm, { ILFUserInfo } from "./components/LoginForm";
+import RegisterForm from "./components/RegisterForm";
 
 interface IProps {}
 
 enum PageState {
-	SHOWN,
-	LOADING,
-	POST,
+	Shown,
+	Loading,
+	Post,
+}
+
+enum FormState {
+	Login,
+	Register,
 }
 
 interface IState {
 	pageState: PageState;
-	username: string;
-	password: string;
+	formState: FormState;
 }
 
 class Login extends Component<IProps, IState> {
 	private menuCard: RefObject<MenuCard> = createRef();
+	private loginForm: RefObject<LoginForm> = createRef();
 
 	constructor(props: IProps) {
 		super(props);
 		this.state = {
-			pageState: PageState.SHOWN,
-			username: "",
-			password: "",
+			pageState: PageState.Shown,
+			formState: FormState.Login,
 		};
 	}
 
-	onSubmitLogin = (event: FormEvent) => {
-		event.preventDefault();
+	onSubmitLogin = (userinfo: ILFUserInfo) => {
+		if (this.state.pageState !== PageState.Loading) {
+			// While we are waiting for the promise show a loading screen.
+			this.setState({ pageState: PageState.Loading });
+			this.menuCard.current?.setCurrentChild(1);
 
-		if (this.state.pageState !== PageState.LOADING) {
 			// Instead of logging and waiting
 			//  Login to the back-end
-			const promise = new Promise((resolve) => setTimeout(resolve, 1500));
+			FirebaseApp.auth()
+				.signInWithEmailAndPassword(userinfo.email, userinfo.password)
+				.catch((error) => {
+					// Flip the card back-around
+					this.menuCard.current?.setCurrentChild(0);
+					this.setState({
+						pageState: PageState.Shown,
+					});
+					this.loginForm.current?.setErrorMessage(error.message);
+				});
 
-			// While we are waiting for the promise show a loading screen.
-			this.setState({ pageState: PageState.LOADING });
-
-			// When succesfull, re-direct the user
-			//  To the dashboard.
-			promise.then(() => this.setState({ pageState: PageState.POST }));
+			// If login is sucessfull App.tsx will redirect Login to Dashboard
 		}
 	};
 
-	onUsernameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		this.setState({ username: event.target.value });
-	};
-
-	onPasswordChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-		this.setState({ password: event.target.value });
-	};
-
 	render() {
-		if (this.state.pageState === PageState.POST) {
+		if (this.state.pageState === PageState.Post) {
 			return <Redirect to="/dashboard"></Redirect>;
 		} else {
 			// Creates a MenuCard with two childs:
 			//  First child is a login-form
 			//  Second child is a loading-icon
 			return (
-				<div className={styles.wrapper}>
+				<div
+					className={
+						stylesB.background +
+						" " +
+						stylesB.wrapper +
+						" " +
+						styles.wrapper
+					}
+				>
 					<MenuCard
 						ref={this.menuCard}
 						cssClass={styles.card}
 						currentChild={0}
 					>
-						<form
-							onSubmit={(event) => {
-								this.menuCard.current?.setCurrentChild(1);
-								this.onSubmitLogin(event);
-							}}
-							name="LoginForm"
+						<div className={styles.cardContentWrapper}>
+							<LoginForm
+								ref={this.loginForm}
+								onClickLogin={(userinfo: ILFUserInfo) => {
+									this.onSubmitLogin(userinfo);
+								}}
+								onClickRegister={() => {
+									this.menuCard.current?.setCurrentChild(2);
+									this.setState({
+										formState: FormState.Register,
+									});
+								}}
+							></LoginForm>
+						</div>
+
+						<div
 							className={
-								styles.formSignin + " " + styles.cardSide
+								styles.cardContentWrapper +
+								" " +
+								styles.cardContentWrapperCenter
 							}
 						>
-							<div className={styles.branding}>
-								<p className={styles.heading}>
-									State of the Cards
-								</p>
-								<img
-									className={styles.logo}
-									src="icons/stateofthecards-icon.svg"
-									alt=""
-								/>
-							</div>
-
-							<hr className={styles.colorGraph} />
-
-							<input
-								type="text"
-								className={styles.formControl}
-								name="Username"
-								placeholder="Username"
-								required
-								autoFocus
-								onChange={this.onUsernameChange}
+							<ScaleLoader
+								height={35}
+								width={4}
+								radius={2}
+								margin={2}
+								color={"#33658a"}
 							/>
-							<input
-								className={styles.formControl}
-								id="password"
-								name="Password"
-								placeholder="Password"
-								type="password"
-								required
-								onChange={this.onPasswordChange}
-							/>
-							<button
-								className={`${styles.formControl} ${styles.loginButton}`}
-								name="Submit"
-								value="Login"
-								type="submit"
-							>
-								Login
-							</button>
-						</form>
-						<ScaleLoader
-							height={35}
-							width={4}
-							radius={2}
-							margin={2}
-							color={"#33658a"}
-						/>
+						</div>
+
+						<div className={styles.cardContentWrapper}>
+							<RegisterForm
+								onClickBack={() => {
+									this.menuCard.current?.setCurrentChild(0);
+									this.setState({
+										formState: FormState.Login,
+									});
+								}}
+								onSubmitRegister={() => {}}
+							></RegisterForm>
+						</div>
 					</MenuCard>
 				</div>
 			);

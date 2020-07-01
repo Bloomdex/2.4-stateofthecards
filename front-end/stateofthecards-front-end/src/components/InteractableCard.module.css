@@ -1,0 +1,133 @@
+.wrapper {
+	margin: 20px;
+	padding: 0px;
+}
+
+.wrapper figure {
+	margin: 0px;
+	padding: 0px;
+}
+
+/*------------------------------------------------Card------------------------------------------------*/
+.interactable {
+	transform-origin: center top;
+	transform-style: preserve-3d;
+	transform: translateZ(0);
+	transition: 0.3s;
+}
+
+.interactable:hover,
+.interactable:active {
+	cursor: pointer;
+}
+
+.card {
+	border-radius: 10px;
+	position: relative;
+	width: 180px;
+	height: 270px;
+	overflow: hidden;
+	box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+}
+
+.interactable:after {
+	position: absolute;
+	content: "";
+	z-index: 10;
+	width: 200%;
+	height: 100%;
+	top: -90%;
+	left: -20px;
+	opacity: 0.1;
+	transform: rotate(45deg);
+	background: linear-gradient(
+		to top,
+		transparent,
+		#fff 15%,
+		rgba(255, 255, 255, 0.5)
+	);
+	transition: 0.3s;
+}
+
+/* 3D tilt effect */
+.interactable:hover,
+.interactable:focus,
+.interactable:active {
+	box-shadow: 0 8px 16px 3px rgba(0, 0, 0, 0.5);
+	transform: translateY(-3px) scale(1.05) rotateX(15deg);
+}
+
+.interactable:hover:after,
+.interactable:focus:after,
+.interactable:active:after {
+	transform: rotate(25deg);
+	top: -40%;
+	opacity: 0.15;
+}
+
+/*------------------------------------------------Card image------------------------------------------------*/
+.card img {
+	width: 100%;
+	min-height: 100%;
+}
+
+/*------------------------------------------------Card caption------------------------------------------------*/
+.interactable .slideOut {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: flex-end;
+
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	padding: 10px;
+	padding-bottom: 10px;
+	font-size: 20px;
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+	text-shadow: 1px 1px 0px rgba(0, 0, 0, 1);
+	color: #fff;
+	transform: translateY(100%);
+	transition: 0.3s;
+}
+
+.disabled .slideOut {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+
+	position: absolute;
+	bottom: 0;
+	top: 0;
+	left: 0;
+	right: 0;
+	padding: 10px;
+	padding-bottom: 10px;
+	font-size: 20px;
+	background: rgba(0, 0, 0, 0.4);
+	text-shadow: 1px 1px 0px rgba(0, 0, 0, 1);
+	transition: background 0.1s linear;
+	color: #fff;
+}
+
+.card .slideOut img {
+	width: 40px;
+	cursor: pointer;
+}
+
+/* Slideout effect */
+.card .slideOut img:hover {
+	filter: brightness(1.4);
+}
+
+.card .slideOut img:active {
+	filter: brightness(1);
+}
+
+.card:hover .slideOut,
+.card:focus .slideOut,
+.card:active .slideOut {
+	transform: none;
+}
